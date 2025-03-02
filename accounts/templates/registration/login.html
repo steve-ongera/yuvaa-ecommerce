@@ -1,0 +1,45 @@
+{% extends "auth_base.html" %}
+{% load static %}
+<title>{% block title %} Yuvaa | login {% endblock %}</title>
+{% load django_bootstrap5 %}
+{% block body %}
+
+        <section class="user-form-part">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-sm-10 col-md-12 col-lg-12 col-xl-6">
+                        <div class="user-form-logo">
+                            <a href="/"><img src="{% static 'en/images/yuva_logo.png'%}" alt="logo"></a>
+                        </div>
+                        <div class="user-form-card">
+                            <div class="user-form-title">
+                                <h2>welcome!</h2>
+                                <p>Use your credentials to access</p>
+                            </div>
+                            <div class="user-form-group">
+                                
+                                <form class="user-form" method="post">
+                                    {% csrf_token %}
+                                    {% bootstrap_form form %}
+
+                                    {% comment %} {% bootstrap_button button_type="submit" content="login" %} {% endcomment %}
+
+                                    <input type="hidden" name="next" value="{{ next }}">
+                                    <div class="form-button">
+                                        <button type="submit">login</button>
+                                        <p>Forgot your password?<a href="{% url 'password_reset' %}">reset here</a></p>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="user-form-remind">
+                            <p>Don't have any account?<a href="{% url 'accounts:signup'%}">register here</a></p>
+                        </div>
+                        <div class="user-form-footer">
+                            <p>Yuvaa | &COPY; Copyright by <a href="#">InnovationHub Softwares</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endblock body %}

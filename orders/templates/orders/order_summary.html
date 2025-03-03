@@ -49,7 +49,7 @@
                                     </tbody>
                                 </table>
                             <hr>
-                            <h3>Total : ksh {{ total_before_coupon }}</h3>
+                            <h3>Total : ksh {{ total_before_coupon|floatformat:2 }}</h3>
                             {% if cart.coupon %}
                                 <h3>Coupon Applied: {{ cart.coupon.code }} ({{ cart.coupon.discount }}% off)</h3>
                                 <h3>Total After Coupon: ksh{{ total_after_coupon }}</h3>

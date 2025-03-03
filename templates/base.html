@@ -170,7 +170,8 @@
                         <button class="header-widget header-cart" title="Cartlist">
                             <i class="fas fa-shopping-basket"></i>
                             <sup>{{cart_detail_data|length}}</sup>
-                            <span>total price<small>Ksh {{cart_data.cart_total}}</small></span>
+                            <span>total price<small>Ksh {{ cart_data.cart_total|floatformat:2 }}
+                            </small></span>
                         </button>
                     </div>
                 </div>
@@ -302,7 +303,7 @@
             <div class="cart-footer">
                 <a class="cart-checkout-btn" href="/orders/checkout">
                     <span class="checkout-label">Proceed to Checkout</span>
-                    <span class="checkout-price">ksh {{cart_data.cart_total}}</span>
+                    <span class="checkout-price">ksh {{cart_data.cart_total|floatformat:2}}</span>
                 </a>
             </div>
         </aside>

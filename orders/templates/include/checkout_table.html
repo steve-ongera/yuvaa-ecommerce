@@ -1,18 +1,18 @@
 <ul>
     <li>
-        <span>Sub total</span>
-        <span>ksh {{sub_total}}</span>
+        <span>Sub total :</span>
+        <span>ksh {{sub_total|floatformat:2}}</span>
     </li>
     <li>
-        <span>delivery fee</span>
+        <span>delivery fee :</span>
         <span>ksh {{delivery_fee}}</span>
     </li>
     <li>
-        <span>discount</span>
+        <span>discount :</span>
         <span>ksh {{coupon}}</span>
     </li>
     <li>
-        <span>Total<small>(Incl. VAT)</small></span>
-        <span>ksh {{cart_total}}</span>
+        <span>Total:</span>
+        <span> <b>ksh {{cart_total|floatformat:2}} </b></span>
     </li>
 </ul>

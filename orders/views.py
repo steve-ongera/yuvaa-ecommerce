@@ -7,6 +7,7 @@ from product.models import Product
 from django.shortcuts import get_object_or_404
 from settings.models import DeliveryFee
 import datetime
+from django.contrib import messages
 
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -24,14 +25,20 @@ class OrderList(LoginRequiredMixin,ListView):
 
 
 def add_to_cart(request):
-    quantity = request.POST['quantity']
-    product = Product.objects.get(id=request.POST['product_id'])
-    cart = Cart.objects.get(user= request.user , status= 'InProgress')
-    cart_detail , created = CartDetail.objects.get_or_create(cart=cart,product=product )
-    cart_detail.quantity = int(quantity)
-    cart_detail.total = round( int(quantity)* product.price, 2)
+    quantity = int(request.POST['quantity'])
+    product = get_object_or_404(Product, id=request.POST['product_id'])
+    cart, created = Cart.objects.get_or_create(user=request.user, status='InProgress')
+    
+    cart_detail, created = CartDetail.objects.get_or_create(cart=cart, product=product)
+    cart_detail.quantity = quantity
+    cart_detail.total = round(quantity * product.price, 2)
     cart_detail.save()
+    
+    # Add success message
+    messages.success(request, f'{product.name} has been added to your cart!')
+
     return redirect(f'/products/{product.slug}')
+
 
 
 def remove_from_cart(request,id):

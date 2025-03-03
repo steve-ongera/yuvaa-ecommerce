@@ -12,6 +12,7 @@ class ShoeSize(models.Model):
     def __str__(self):
         return self.size
 
+from django.utils.text import slugify
 
 # Create your models here.
 FLAG_TYPES =[
@@ -31,7 +32,7 @@ class Product(models.Model):
     quantity = models.IntegerField(_('Quantity'))
     brand = models.ForeignKey('Brand',verbose_name=_('Brand'), related_name='product_brand', on_delete=models.SET_NULL, null=True)
     tags = TaggableManager()
-    slug = models.SlugField(null=True , blank=True )
+    slug = models.SlugField(null=True , blank=True , unique=True )
 
     available_sizes = models.ManyToManyField(ShoeSize,  blank=True)
 
@@ -54,8 +55,19 @@ class Product(models.Model):
 
 
     def save(self, *args, **kwargs):
-       self.slug = slugify(self.name) 
-       super(Product, self).save(*args, **kwargs) # Call the real save() method
+        if not self.slug:  # Only generate slug if empty
+            base_slug = slugify(self.name)  # Convert name to a slug
+            slug = base_slug
+            counter = 1
+            
+            # Ensure the slug is unique by appending a number if needed
+            while Product.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            self.slug = slug
+
+        super().save(*args, **kwargs)  # Call the original save() method
 
 
 class ProductImages(models.Model):

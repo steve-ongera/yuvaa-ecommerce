@@ -217,15 +217,15 @@
                                     <h6 class="product-price">
                                         <span>ksh {{item.price}}</span>
                                     </h6>
-                                    <button class="product-add" title="Add to Cart">
-                                        <i class="fas fa-shopping-basket"></i>
-                                        <span>add</span>
-                                    </button>
-                                    <div class="product-action">
-                                        <button class="action-minus" title="Quantity Minus"><i class="icofont-minus"></i></button>
-                                        <input class="action-input" title="Quantity Number" type="text" name="quantity" value="1">
-                                        <button class="action-plus" title="Quantity Plus"><i class="icofont-plus"></i></button>
-                                    </div>
+                                    <form action="{% url 'orders:add_to_cart' %}" method="POST">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ item.id }}">
+                                        <input type="hidden" name="quantity" value="1">  <!-- Default quantity is 1 -->
+                                        <button type="submit" class="product-add" title="Add to Cart">
+                                            <i class="fas fa-shopping-basket"></i>
+                                            <span>add</span>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -292,15 +292,18 @@
                                         <span>ksh {{item.price}}</span>
                                     </h6>
                                     <p class="feature-desc">{{item.subtitle}}</p>
-                                    <button class="product-add" title="Add to Cart">
-                                        <i class="fas fa-shopping-basket"></i>
-                                        <span>add</span>
-                                    </button>
-                                    <div class="product-action">
-                                        <button class="action-minus" title="Quantity Minus"><i class="icofont-minus"></i></button>
-                                        <input class="action-input" title="Quantity Number" type="text" name="quantity" value="1">
-                                        <button class="action-plus" title="Quantity Plus"><i class="icofont-plus"></i></button>
-                                    </div>
+                                    <!-- Add to Cart Button (without quantity selection) -->
+                                    
+                                    <form action="{% url 'orders:add_to_cart' %}" method="POST">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ item.id }}">
+                                        <input type="hidden" name="quantity" value="1">  <!-- Default quantity is 1 -->
+                                        <button type="submit" class="product-add" title="Add to Cart">
+                                            <i class="fas fa-shopping-basket"></i>
+                                            <span>add</span>
+                                        </button>
+                                    </form>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -368,15 +371,15 @@
                                             <h6 class="product-price">
                                                 <span>ksh {{item.price}}</span>
                                             </h6>
-                                            <button class="product-add" title="Add to Cart">
-                                                <i class="fas fa-shopping-basket"></i>
-                                                <span>add</span>
-                                            </button>
-                                            <div class="product-action">
-                                                <button class="action-minus" title="Quantity Minus"><i class="icofont-minus"></i></button>
-                                                <input class="action-input" title="Quantity Number" type="text" name="quantity" value="1">
-                                                <button class="action-plus" title="Quantity Plus"><i class="icofont-plus"></i></button>
-                                            </div>
+                                            <form action="{% url 'orders:add_to_cart' %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="product_id" value="{{ item.id }}">
+                                                <input type="hidden" name="quantity" value="1">  <!-- Default quantity is 1 -->
+                                                <button type="submit" class="product-add" title="Add to Cart">
+                                                    <i class="fas fa-shopping-basket"></i>
+                                                    <span>add</span>
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </li>

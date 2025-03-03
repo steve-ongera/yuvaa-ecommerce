@@ -18,22 +18,23 @@ def signup(request):
             
             # Create user object but don't save it yet
             user = form.save(commit=False)
-            user.is_active = False  # Initially, set the user as inactive
+            user.is_active = True  # Changed to True - user is active immediately
             user.save()
             
             # Create or update the profile associated with this user
             profile = Profile.objects.get(user__username=username)
             
-            # Send activation email
+            # Send welcome email (optional - you can keep or remove this)
             send_mail(
-                "Activate Your Account",
-                f"Welcome {username} \nuse this code {profile.code} to activate your account",
+                "Welcome to Your Account",
+                f"Welcome {username}! Your account has been activated. You can now login.",
                 settings.EMAIL_HOST_USER,
                 [email],
                 fail_silently=False,
             )
                 
-            return redirect(f'/accounts/{username}/activate')
+            # Redirect directly to login instead of activation page
+            return redirect('/accounts/login')
             
     else:
         form = SignupForm()
@@ -45,6 +46,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+#this part of the view has already be implimented on the signup view automatically 
 def activate(request, username):
     # Fetch profile of the user
     profile = Profile.objects.get(user__username=username)

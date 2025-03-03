@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 from django.utils.text import slugify
 from django.db.models.aggregates import Avg
+from django.db.models import Avg
+from decimal import Decimal
 
 class ShoeSize(models.Model):
     size = models.CharField(_('Size'), max_length=5)  # e.g., "7", "8", "9", "10"
@@ -66,6 +68,13 @@ class Product(models.Model):
                 counter += 1
 
             self.slug = slug
+
+         # Auto-calculate discounted price
+        if self.original_price and self.discount:
+            discount_decimal = Decimal(self.discount)  # Convert discount to Decimal
+            self.discounted_price = self.original_price * (Decimal(1) - (discount_decimal / Decimal(100)))
+        else:
+            self.discounted_price = self.original_price  # If no discount, keep original price
 
         super().save(*args, **kwargs)  # Call the original save() method
 

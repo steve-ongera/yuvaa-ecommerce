@@ -43,6 +43,7 @@
         <link rel="stylesheet" href="{% static 'en/vendor/slickslider/slick.min.css' %}">
         <link rel="stylesheet" href="{% static 'en/vendor/niceselect/nice-select.min.css' %}">
         <link rel="stylesheet" href="{% static 'en/vendor/bootstrap/bootstrap.min.css' %}">
+       
             {% else %}
         <link rel="stylesheet" href="{% static 'ar/fonts/flaticon/flaticon.css' %}">
         <link rel="stylesheet" href="{% static 'ar/fonts/icofont/icofont.min.css' %}">
@@ -56,6 +57,7 @@
 
         <!-- CUSTOM -->
         <link rel="stylesheet" href="{% static 'en/css/main.css' %}">
+        <link rel="stylesheet" href="{% static 'en/css/messages.css' %}">
         {% block css %}
             <link rel="stylesheet" href="{% static 'en/css/index.css' %}">
         {% endblock css %}
@@ -834,6 +836,8 @@
             <script src="{% static 'en/js/venobox.js' %}"></script>
             <script src="{% static 'en/js/slick.js' %}"></script>
             <script src="{% static 'en/js/main.js' %}"></script> 
+            <!-- Include the JavaScript file -->
+           <script src="{% static 'en/js/messages.js' %}"></script>
         {% else %}
             <script src="{% static 'ar/vendor/bootstrap/jquery-1.12.4.min.js' %}"></script>
             <script src="{% static 'ar/vendor/bootstrap/popper.min.js' %}"></script>
@@ -847,7 +851,8 @@
             <script src="{% static 'ar/js/accordion.js' %}"></script>
             <script src="{% static 'ar/js/venobox.js' %}"></script>
             <script src="{% static 'ar/js/slick.js' %}"></script>
-            <script src="{% static 'ar/js/main.js' %}"></script> 
+            <script src="{% static 'ar/js/main.js' %}"></script>
+            <script src="{% static 'en/js/messages.js' %}"></script> 
         {% endif %}
         <!--=====================================
                     JS LINK PART END

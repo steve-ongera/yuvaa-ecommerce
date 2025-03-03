@@ -5,7 +5,7 @@ from .models import Profile
 from django.core.mail import send_mail
 from django.contrib.auth import logout
 from django.views import View
-
+from django.contrib import messages
 from django.conf import settings
 
 
@@ -34,6 +34,7 @@ def signup(request):
             )
                 
             # Redirect directly to login instead of activation page
+            messages.success(request, "Registration successful! Welcome aboard.")
             return redirect('/accounts/login')
             
     else:
@@ -44,6 +45,7 @@ def signup(request):
 
 def logout_view(request):
     logout(request)
+    messages.success(request, "You have been logged out.")
     return redirect('login')
 
 #this part of the view has already be implimented on the signup view automatically 

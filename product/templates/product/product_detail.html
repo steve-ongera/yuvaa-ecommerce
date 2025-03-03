@@ -89,13 +89,53 @@
                                 {% if user.is_authenticated %}
                                     <form action="{% url 'orders:add_to_cart' %}" method="post">
                                         {% csrf_token %}
-                                        <input class="" title="Quantity Number" type="text" name="quantity" value="1">
+                                        <div class="quantity-control" style="display: flex; align-items: center; margin-bottom: 10px;">
+                                            <button type="button" class="quantity-btn minus" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f8f8f8; cursor: pointer;">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <span class="quantity-display" style="width: 40px; text-align: center; margin: 0 10px;">1</span>
+                                            <input type="hidden" name="quantity" id="quantity-input" value="1">
+                                            <button type="button" class="quantity-btn plus" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f8f8f8; cursor: pointer;">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
                                         <input type="hidden" name="product_id" value="{{ object.id }}">
                                         <button type="submit" class="product-add" title="Add to Cart">
                                             <i class="fas fa-shopping-basket"></i>
                                             <span>add to cart</span>
                                         </button>
                                     </form>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            const minusBtn = document.querySelector('.quantity-btn.minus');
+                                            const plusBtn = document.querySelector('.quantity-btn.plus');
+                                            const quantityDisplay = document.querySelector('.quantity-display');
+                                            const quantityInput = document.querySelector('#quantity-input');
+                                            
+                                            // Minimum quantity value
+                                            const MIN_QUANTITY = 1;
+                                            // Maximum quantity value (adjust as needed)
+                                            const MAX_QUANTITY = 99;
+                                            
+                                            minusBtn.addEventListener('click', function() {
+                                                let currentValue = parseInt(quantityDisplay.textContent);
+                                                if (currentValue > MIN_QUANTITY) {
+                                                    currentValue--;
+                                                    quantityDisplay.textContent = currentValue;
+                                                    quantityInput.value = currentValue;
+                                                }
+                                            });
+                                            
+                                            plusBtn.addEventListener('click', function() {
+                                                let currentValue = parseInt(quantityDisplay.textContent);
+                                                if (currentValue < MAX_QUANTITY) {
+                                                    currentValue++;
+                                                    quantityDisplay.textContent = currentValue;
+                                                    quantityInput.value = currentValue;
+                                                }
+                                            });
+                                        });
+                                    </script>
                                 {% else %}
                                     <p>You must be logged in to add items to your cart. <a href="{% url 'login' %}?next={{ request.path }}">Login here</a></p>
                                 {% endif %}

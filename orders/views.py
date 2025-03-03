@@ -23,7 +23,7 @@ class OrderList(LoginRequiredMixin,ListView):
 
 
 
-
+@login_required(login_url='/accounts/login/')  # Redirect to login if not authenticated
 def add_to_cart(request):
     quantity = int(request.POST['quantity'])
     product = get_object_or_404(Product, id=request.POST['product_id'])

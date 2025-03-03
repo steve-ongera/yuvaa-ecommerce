@@ -321,12 +321,23 @@
                                         <form action="{% url 'orders:add_to_cart' %}" method="POST">
                                             {% csrf_token %}
                                             <input type="hidden" name="product_id" value="{{ object.id }}">
-                                            <input type="hidden" name="quantity" value="1">  <!-- Default quantity is 1 -->
-                                            <button type="submit" class="product-add" title="Add to Cart">
-                                                <i class="fas fa-shopping-basket"></i>
-                                                <span>add</span>
-                                            </button>
+                                            <input type="hidden" name="quantity" value="1">
+                                            
+                                            {% if request.user.is_authenticated %}
+                                                <!-- Show Add to Cart button if user is logged in -->
+                                                <button type="submit" class="product-add" title="Add to Cart">
+                                                    <i class="fas fa-shopping-basket"></i>
+                                                    <span>add</span>
+                                                </button>
+                                            {% else %}
+                                                <!-- Redirect to login with next URL to return after login -->
+                                                <a href="{% url 'login' %}?next={{ request.path }}" class="product-add">
+                                                    <i class="fas fa-shopping-basket"></i>
+                                                    <span> Add</span>
+                                                </a>
+                                            {% endif %}
                                         </form>
+                                        
                                     </div>
                                 </div>
                             </div>

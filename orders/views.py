@@ -62,62 +62,104 @@ def remove_from_cart(request,id):
 
 @login_required
 def checkout(request):
-    cart = Cart.objects.get(user=request.user,status='InProgress')
-    cart_detail = CartDetail.objects.filter(cart=cart)
-    delivery_fee = DeliveryFee.objects.last().fee
-    cart_total_items = sum(item.quantity for item in cart_detail)  # Ensure correct count
+    user = request.user
+    
+    try:
+        # Get the user's active cart
+        cart = Cart.objects.get(user=user, status='InProgress')
+        cart_detail = CartDetail.objects.filter(cart=cart)
 
-    # Calculate delivery date (3-2 days after order but not on weekends)
-    def calculate_delivery_date(order_date):
-        delivery_date = order_date + timedelta(days=2)  # Default to 2 days after
+        # Calculate cart total and total items
+        cart_total = float(cart.cart_total() or 0.0)  # Ensure cart_total is always a float
+        cart_total_items = sum(item.quantity for item in cart_detail)
 
-        if delivery_date.weekday() in [5, 6]:  # If Saturday (5) or Sunday (6)
-            delivery_date += timedelta(days=(7 - delivery_date.weekday()))  # Move to Monday
+        # Ensure an order exists or create a new one
+        order, created = Order.objects.get_or_create(
+            user=user, 
+            status='pending',
+            defaults={'total_price': cart_total}
+        )
 
-        return delivery_date.strftime('%d %B')  # Format as "DD Month"
+        # Get or create a default pickup station
+        pickup_station, station_created = PickupStation.objects.get_or_create(
+            name="G4S Nairobi-Kenol Station",
+            defaults={
+                'location': 'Nairobi, Java House',
+                'details': 'Nairobi, Java House, Ground Floor, Nairobi - Kenol',
+                'delivery_fee': DeliveryFee.objects.last().fee if DeliveryFee.objects.last() else 0.0  # Ensure delivery_fee exists
+            }
+        )
 
-    # Assign delivery date
-    order_date = datetime.date.today()  # Get current date
-    delivery_start_date = calculate_delivery_date(order_date)
-    delivery_end_date = calculate_delivery_date(order_date + timedelta(days=1))  # One day after
+        # Update order with pickup station and delivery fee
+        order.pickup_station = pickup_station
+        order.delivery_fee = float(pickup_station.delivery_fee or 0.0)  # Ensure delivery_fee is always a float
 
-    print("Total items in cart:", cart_total_items)  # Debugging print statement
+        # Calculate total price including delivery fee
+        order.total_price = cart_total + order.delivery_fee
+        order.save()
 
-    if request.method == 'POST':
-        coupon = get_object_or_404(Coupon,code=request.POST['coupon_code'])  # 404
+        # Calculate delivery date (3-2 days after order but not on weekends)
+        def calculate_delivery_date(order_date):
+            delivery_date = order_date + timedelta(days=2)  # Default to 2 days after
 
+            if delivery_date.weekday() in [5, 6]:  # If Saturday (5) or Sunday (6)
+                delivery_date += timedelta(days=(7 - delivery_date.weekday()))  # Move to Monday
 
-        if coupon and coupon.quantity > 0 :
-            today_date = datetime.datetime.today().date()
-            # if (coupon.start <= today_date < coupon.end ):
-            if today_date >= coupon.start_date and today_date <= coupon.end_date:
-                coupon_value = cart.cart_total() * coupon.discount/100
-                cart_total = cart.cart_total() - coupon_value
+            return delivery_date.strftime('%d %B')  # Format as "DD Month"
 
-                coupon.quantity -= 1 
-                coupon.save()
-                cart.coupon = coupon
-                cart.total_After_coupon = cart_total
-                cart.save()
+        # Assign delivery date
+        order_date = datetime.date.today()  # Get current date
+        delivery_start_date = calculate_delivery_date(order_date)
+        delivery_end_date = calculate_delivery_date(order_date + timedelta(days=1))  # One day after
 
-                total = delivery_fee + cart_total
-
-                cart = Cart.objects.get(user=request.user,status='InProgress')
+        # Coupon handling (if POST request)
+        coupon = None
+        if request.method == 'POST':
+            try:
+                coupon = get_object_or_404(Coupon, code=request.POST['coupon_code'])
                 
-       
+                # Check coupon validity
+                today_date = datetime.today().date()  # Corrected
+                if coupon.quantity > 0 and coupon.start_date <= today_date <= coupon.end_date:
+                    # Calculate coupon discount
+                    coupon_value = cart_total * (coupon.discount / 100)
+                    discounted_cart_total = cart_total - coupon_value
 
-    return render(request ,'orders\checkout2.html',
-        {
-        'cart_detail' : cart_detail,
-        'sub_total' : cart.cart_total(),
-        'cart_total' : delivery_fee + cart.cart_total(),
-        'coupon' : 0,
-        'delivery_fee' : delivery_fee,
-        'cart_total_items': cart_total_items,  # Pass total items
-        'user': request.user,  # Pass user info
-        'delivery_start_date': delivery_start_date,
-        'delivery_end_date': delivery_end_date,
-        })
+                    # Update coupon and cart
+                    coupon.quantity -= 1
+                    coupon.save()
+                    
+                    cart.coupon = coupon
+                    cart.total_After_coupon = discounted_cart_total
+                    cart.save()
+
+            except Coupon.DoesNotExist:
+                messages.error(request, "Invalid coupon code")
+
+        #Prepare context for template
+        context = {
+            'cart_detail': cart_detail,
+            'sub_total': cart_total,
+            'cart_total': cart_total + order.delivery_fee,
+            'coupon': coupon,
+            'delivery_fee': order.delivery_fee,
+            'cart_total_items': cart_total_items,
+            'user': user,
+            'delivery_start_date': delivery_start_date,
+            'delivery_end_date': delivery_end_date,
+            'pickup_station': order.pickup_station,
+            'pickup_stations': PickupStation.objects.all(),
+        }
+
+        return render(request, 'orders/checkout2.html', context)
+
+    except Cart.DoesNotExist:
+        messages.error(request, "No active cart found.")
+        return redirect('/')  # Redirect to cart page
+    except Exception as e:
+        messages.error(request, f"An error occurred: {str(e)}")
+        return redirect('/')  # Redirect to home page
+
 
 
 @login_required
@@ -130,8 +172,11 @@ def update_pickup_station(request):
         
         user = request.user
         
+        # Get the user's cart
+        cart = Cart.objects.get(user=user, status='InProgress')
+        
         # Get the user's pending order
-        order = Order.objects.get(user=user, status='pending')
+        order, created = Order.objects.get_or_create(user=user, status='pending')
         
         # Get the pickup station from the database
         pickup_station = get_object_or_404(PickupStation, id=station_id)
@@ -139,15 +184,14 @@ def update_pickup_station(request):
         # Update the pickup station for the order
         order.pickup_station = pickup_station
         order.delivery_fee = pickup_station.delivery_fee  # Update delivery fee
-        order.save()
+        
+        # Calculate cart total (use the cart's method)
+        cart_total = cart.cart_total()
+        
+        # Calculate new total (cart total + delivery fee)
+        order_total = cart_total + order.delivery_fee
 
-        # Get the total price of cart items
-        items_total = order.get_cart_total  # Ensure this method exists in your Order model
-
-        # Calculate new total
-        order_total = items_total + order.delivery_fee
-
-        # Save the recalculated total to the order
+        # Save the order with updated details
         order.total_price = order_total
         order.save()
 
@@ -157,12 +201,16 @@ def update_pickup_station(request):
             'station_name': pickup_station.name,
             'station_details': pickup_station.details,
             'new_delivery_fee': order.delivery_fee,  
-            'order_total': order_total,  # Correct total order sum
+            'order_total': order_total,
+            'cart_total': cart_total,
         })
     
     except Exception as e:
         # If any error occurs, return a failure response
-        return JsonResponse({'success': False, 'error': str(e)})
+        return JsonResponse({
+            'success': False, 
+            'error': str(e)
+        })
 
 
 def order_summary(request):

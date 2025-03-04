@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import OrderList , checkout ,add_to_cart , remove_from_cart , order_summary , mpesa_initiate_payment,mpesa_payment_success,mpesa_payment_failed , mpesa_callback , check_transaction_status
+from .views import OrderList , checkout ,add_to_cart , remove_from_cart , order_summary , mpesa_initiate_payment,mpesa_payment_success,mpesa_payment_failed , mpesa_callback , check_transaction_status , update_pickup_station
 
 from .api import CartDetailCreateAPI , OrderListAPI , OrderDetailAPI , CreateOrderAPI , ApplyCouponAPI 
 
@@ -12,6 +12,7 @@ urlpatterns = [
     path('checkout',checkout),
     path('add_to_cart', add_to_cart ,name ='add_to_cart'),
     path('<int:id>/remove-from-cart',remove_from_cart),
+    path('update-pickup-station/', update_pickup_station, name='update_pickup_station'),
     path('order-summary/', order_summary, name='order_summary'),
     #mpesa integrations
 

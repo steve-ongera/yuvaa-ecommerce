@@ -1,0 +1,392 @@
+/* Checkout specific styles - to be used with base.html */
+
+/* Checkout Container */
+.checkout-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 20px;
+}
+
+/* Checkout Steps */
+.checkout-steps {
+    flex: 3;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.order-summary {
+    flex: 1;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+/* Step Styles */
+.step {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.step-icon {
+    display: flex;
+    align-items: center;
+}
+
+.step-icon i {
+    color: green;
+    font-size: 24px;
+}
+
+
+.completed i {
+    color: #4CAF50;
+}
+
+.current i {
+    color: #8A2BE2;
+}
+
+.step-number {
+    font-weight: bold;
+}
+
+.change-link a {
+    color: #8A2BE2;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.change-link i {
+    margin-left: 5px;
+    font-size: 12px;
+}
+
+/* Address Details */
+.address-details, .delivery-details, .payment-details {
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.customer-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.address-line {
+    color: #555;
+}
+
+/* Delivery Details */
+.pickup-info {
+    margin-bottom: 15px;
+}
+
+.pickup-info h3 {
+    font-size: 16px;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.station-details {
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.station-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.station-header h4 {
+    font-size: 14px;
+    color: #555;
+}
+
+.station-address p {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+/* Shipments */
+.shipments {
+    margin-top: 20px;
+}
+
+.shipment-row {
+    margin-bottom: 20px;
+}
+
+.shipment-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.fulfillment {
+    color: #555;
+    font-style: italic;
+}
+
+/* Product Item */
+.product-item {
+    display: flex;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.product-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-right: 15px;
+}
+
+.product-details {
+    flex-grow: 1;
+}
+
+.product-name {
+    margin: 0 0 5px;
+    font-weight: bold;
+}
+
+.product-qty {
+    margin: 0 0 5px;
+    color: #666;
+}
+
+.vendor-logo {
+    max-height: 20px;
+    margin-top: 5px;
+}
+
+/* Confirmation Button */
+.confirm-button-container {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.confirm-delivery-btn {
+    background-color: #8A2BE2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+
+.product-info {
+    display: flex;
+    padding: 15px 0;
+    gap: 15px;
+}
+
+.product-image {
+    width: 60px;
+    height: 60px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.product-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.product-details {
+    flex: 1;
+}
+
+.product-details p {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.express-tag {
+    margin-top: 5px;
+    height: 20px;
+}
+
+.express-tag img {
+    height: 100%;
+}
+
+.modify-cart {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.modify-cart a {
+    color: #8A2BE2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* Payment Method */
+.payment-method {
+    display: flex;
+    flex-direction: column;
+    padding: 15px 0;
+}
+
+.payment-method h3 {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.payment-method p {
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.mpesa-logo {
+    height: 30px;
+    margin-top: 10px;
+}
+
+.mpesa-logo img {
+    height: 100%;
+}
+
+.back-link {
+    margin-top: 20px;
+}
+
+.back-link a {
+    color: #555;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.back-link i {
+    margin-right: 5px;
+}
+
+/* Order Summary */
+.order-summary h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.summary-details {
+    margin-bottom: 20px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.total {
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.voucher-section {
+    margin-bottom: 20px;
+}
+
+.voucher-input {
+    display: flex;
+    gap: 10px;
+}
+
+.voucher-input input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.voucher-input button {
+    background-color: transparent;
+    color: #8A2BE2;
+    border: 1px solid #8A2BE2;
+    border-radius: 4px;
+    padding: 0 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.confirm-order button {
+    width: 100%;
+    background-color: #8A2BE2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+.terms-notice {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+}
+
+.terms-notice a {
+    color: #8A2BE2;
+    text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .checkout-container {
+        flex-direction: column;
+    }
+    
+    .order-summary {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-info {
+        flex-direction: column;
+    }
+    
+    .product-image {
+        width: 80px;
+        height: 80px;
+    }
+}

@@ -3,14 +3,19 @@ from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Order ,Cart , CartDetail,OrderDetail , Coupon
-from product.models import Product
+from product.models import Product , PickupStation
 from django.shortcuts import get_object_or_404
 from settings.models import DeliveryFee
 import datetime
 from django.contrib import messages
-
+from django.utils.timezone import now
+from datetime import timedelta
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+
+
+from django.views.decorators.http import require_POST
+import json
 
 class OrderList(LoginRequiredMixin,ListView):
     model = Order
@@ -60,6 +65,23 @@ def checkout(request):
     cart = Cart.objects.get(user=request.user,status='InProgress')
     cart_detail = CartDetail.objects.filter(cart=cart)
     delivery_fee = DeliveryFee.objects.last().fee
+    cart_total_items = sum(item.quantity for item in cart_detail)  # Ensure correct count
+
+    # Calculate delivery date (3-2 days after order but not on weekends)
+    def calculate_delivery_date(order_date):
+        delivery_date = order_date + timedelta(days=2)  # Default to 2 days after
+
+        if delivery_date.weekday() in [5, 6]:  # If Saturday (5) or Sunday (6)
+            delivery_date += timedelta(days=(7 - delivery_date.weekday()))  # Move to Monday
+
+        return delivery_date.strftime('%d %B')  # Format as "DD Month"
+
+    # Assign delivery date
+    order_date = datetime.date.today()  # Get current date
+    delivery_start_date = calculate_delivery_date(order_date)
+    delivery_end_date = calculate_delivery_date(order_date + timedelta(days=1))  # One day after
+
+    print("Total items in cart:", cart_total_items)  # Debugging print statement
 
     if request.method == 'POST':
         coupon = get_object_or_404(Coupon,code=request.POST['coupon_code'])  # 404
@@ -82,26 +104,65 @@ def checkout(request):
 
                 cart = Cart.objects.get(user=request.user,status='InProgress')
                 
-
-                html = render_to_string('include/checkout_table.html',{
-                    'cart_detail' : cart_detail,
-                    'sub_total' : cart_total,
-                    'cart_total' : total,
-                    'coupon' : coupon_value ,
-                    'delivery_fee' : delivery_fee
-                    
-                })
-                return JsonResponse({'result':html})
        
 
-    return render(request ,'orders\checkout.html',
+    return render(request ,'orders\checkout2.html',
         {
         'cart_detail' : cart_detail,
         'sub_total' : cart.cart_total(),
         'cart_total' : delivery_fee + cart.cart_total(),
         'coupon' : 0,
-        'delivery_fee' : delivery_fee
+        'delivery_fee' : delivery_fee,
+        'cart_total_items': cart_total_items,  # Pass total items
+        'user': request.user,  # Pass user info
+        'delivery_start_date': delivery_start_date,
+        'delivery_end_date': delivery_end_date,
         })
+
+
+@login_required
+@require_POST
+def update_pickup_station(request):
+    try:
+        # Get the station_id from the request
+        data = json.loads(request.body)
+        station_id = data.get('station_id')
+        
+        user = request.user
+        
+        # Get the user's pending order
+        order = Order.objects.get(user=user, status='pending')
+        
+        # Get the pickup station from the database
+        pickup_station = get_object_or_404(PickupStation, id=station_id)
+        
+        # Update the pickup station for the order
+        order.pickup_station = pickup_station
+        order.delivery_fee = pickup_station.delivery_fee  # Update delivery fee
+        order.save()
+
+        # Get the total price of cart items
+        items_total = order.get_cart_total  # Ensure this method exists in your Order model
+
+        # Calculate new total
+        order_total = items_total + order.delivery_fee
+
+        # Save the recalculated total to the order
+        order.total_price = order_total
+        order.save()
+
+        # Return updated details
+        return JsonResponse({
+            'success': True,
+            'station_name': pickup_station.name,
+            'station_details': pickup_station.details,
+            'new_delivery_fee': order.delivery_fee,  
+            'order_total': order_total,  # Correct total order sum
+        })
+    
+    except Exception as e:
+        # If any error occurs, return a failure response
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
 def order_summary(request):

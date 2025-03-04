@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product , ProductImages ,Brand ,Review ,ShoeSize
+from .models import Product , ProductImages ,Brand ,Review ,ShoeSize , PickupStation
 from django.utils.text import slugify
 
 # Register your models here.
@@ -36,3 +36,4 @@ admin.site.register(ProductImages)
 admin.site.register(Brand)
 admin.site.register(Review)
 admin.site.register(ShoeSize)
+admin.site.register(PickupStation)

@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% load static %}
+{% block CSS %}
+    <link rel="stylesheet" href="{% static "en/css/checkout2.css" %}">
+{% endblock CSS %}
+{% block body %}
+<link rel="stylesheet" href="{% static "en/css/checkout2.css" %}">
+<link rel="stylesheet" href="{% static "en/css/checkout3.css" %}">
+<style>
+    /* Modal Styling */
+.pickup-modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4); /* Black with transparency */
+}
+
+.pickup-modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Can adjust this to your needs */
+}
+
+.close-modal {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+</style>
+
+<div class="checkout-container">
+    <div class="checkout-steps">
+        <div class="step completed">
+            <div class="step-icon">
+                <i class="fas fa-check-circle"></i>
+                <span class="step-number"> 1. CUSTOMER ADDRESS</span>
+            </div>
+            <div class="change-link">
+                <a href="#">Change <i class="fas fa-chevron-right"></i></a>
+            </div>
+        </div>
+        
+        <div class="address-details">
+            <p class="customer-name">{{ user.username }}</p>
+            <p class="address-line">Muranga, Town | Murang'a - Murang'a Town | {{ user.email }}</p>
+        </div>
+        
+        <div class="step completed">
+            <div class="step-icon">
+                <i class="fas fa-check-circle"></i>
+                <span class="step-number"> 2. DELIVERY DETAILS</span>
+            </div>
+            <div class="change-link">
+                <a href="#" id="changePickupBtn">Change <i class="fas fa-chevron-right"></i></a>
+            </div>
+        </div>
+        
+        <div class="delivery-details">
+            <div class="pickup-info">
+                <h3>Pick-up Station</h3>
+                <p>Delivery between <strong> {{ delivery_start_date }} and {{ delivery_end_date }}</strong></p>
+            </div>
+            
+            <div class="station-details">
+                <div class="station-header">
+                    <h4>Pickup Station</h4>
+                   
+                </div>
+                <div class="station-address">
+                    <p><strong> {{ pickup_station.name }}</strong></p>
+                    <p>{{ pickup_station.location_details }}</p>
+                </div>
+            </div>
+
+            <!-- Pickup Station Modal -->
+            <div class="pickup-modal" id="pickupModal">
+                <div class="pickup-modal-content">
+                    <div class="pickup-modal-header">
+                        <h3>Select Pickup Station</h3>
+                        <span class="close-modal">&times;</span>
+                    </div>
+                    <div class="pickup-modal-body">
+                        <div class="station-search">
+                            <input type="text" id="stationSearch" placeholder="Search pickup stations...">
+                        </div>
+                        <div class="station-list">
+                            {% for station in pickup_stations %}
+                            <div class="station-item" data-station-id="{{ station.id }}">
+                                <div class="station-info">
+                                    <h4>{{ station.name }}</h4>
+                                    <p>{{ station.details }}</p>
+                                </div>
+                                <button class="select-station-btn" data-station-id="{{ station.id }}" 
+                                        data-station-name="{{ station.name }}" 
+                                        data-station-details="{{ station.details }}">
+                                    Select
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const modal = document.getElementById('pickupModal');
+                    const changeBtn = document.getElementById('changePickupBtn');
+                    const closeBtn = document.querySelector('.close-modal');
+                    const stationBtns = document.querySelectorAll('.select-station-btn');
+                    const searchInput = document.getElementById('stationSearch');
+                    
+                    // Open modal
+                    changeBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        modal.style.display = 'block';
+                    });
+                    
+                    // Close modal
+                    closeBtn.addEventListener('click', function() {
+                        modal.style.display = 'none';
+                    });
+                    
+                    // Close modal when clicking outside
+                    window.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            modal.style.display = 'none';
+                        }
+                    });
+                    
+                    // Handle station selection
+                    stationBtns.forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const stationId = this.getAttribute('data-station-id');
+                            const stationName = this.getAttribute('data-station-name');
+                            const stationDetails = this.getAttribute('data-station-details');
+                            
+                            // Update the displayed pickup station
+                            document.querySelector('.station-details').innerHTML = 
+                                stationName + '<br>' + stationDetails;
+                            
+                            // Send AJAX request to update the pickup station
+                            updatePickupStation(stationId);
+                            
+                            // Close the modal
+                            modal.style.display = 'none';
+                        });
+                    });
+                    
+                    // Search functionality
+                    searchInput.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        const stationItems = document.querySelectorAll('.station-item');
+                        
+                        stationItems.forEach(item => {
+                            const stationName = item.querySelector('h4').textContent.toLowerCase();
+                            const stationDetails = item.querySelector('p').textContent.toLowerCase();
+                            
+                            if (stationName.includes(searchTerm) || stationDetails.includes(searchTerm)) {
+                                item.style.display = 'flex';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    });
+                    
+                    // Function to send AJAX request to update pickup station
+                    function updatePickupStation(stationId) {
+                        fetch('/update-pickup-station/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            body: JSON.stringify({
+                                'station_id': stationId
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Pickup station updated successfully');
+                                
+                                // Update the displayed delivery fee
+                                const newDeliveryFee = data.new_delivery_fee;
+                                document.querySelector('.summary-row:nth-child(2) .price').textContent = `KSh ${newDeliveryFee}`;
+
+                                // Recalculate and update the total
+                                // Update order total directly from the response
+                                const newTotal = parseFloat(data.order_total);
+                                document.querySelector('.summary-row.total .price').textContent = `KSh ${newTotal.toFixed(0)}`;
+
+                                
+                                // Optionally, update other parts of the page with the new station details
+                                document.querySelector('.station-details').innerHTML = 
+                                    `<strong>${data.station_name}</strong><br>${data.station_details}`;
+                            } else {
+                                console.error('Error updating pickup station');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    }
+                    
+                    // Helper function to get CSRF token
+                    function getCookie(name) {
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                    
+                });
+            </script>
+            
+
+            <div class="shipment-container">
+                {% for item in cart_detail %}
+                <div class="shipment-section">
+                    <div class="shipment-header">
+                        <span>Shipment {{ forloop.counter }}/{{ cart_detail|length }}</span>
+                        <span class="fulfillment-info">Fulfilled by Yuvaa Store</span>
+                    </div>
+                    
+                    <div class="shipment-details">
+                        <div class="pickup-info">
+                            <h4>Pick-up Station</h4>
+                            <p>Delivery {% if shipment.scheduled %}scheduled on{% else %}between{% endif %} {{ delivery_start_date }} and {{ delivery_end_date }}</p>
+                            
+                            <div class="product-item">
+                                <img src="{{item.product.image.url}}" alt="{{ item.product.name }}">
+                                <div class="product-details">
+                                    <p class="product-name">{{ item.product.name }}</p>
+                                    <p class="product-qty">QTY: {{item.quantity}}</p>
+                                    {% if shipment.profile_picture %}
+                                       <img src="{{ shipment.profile_picture.url }}" alt="{{ shipment.fulfilled_by }}" class="vendor-logo">
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            
+            
+            <div class="modify-cart">
+                <a href="#">Modify cart</a>
+            </div>
+        </div>
+        
+        <div class="step current">
+            <div class="step-icon">
+                <i class="fas fa-check-circle"></i>
+                <span class="step-number"> 3. PAYMENT METHOD</span>
+            </div>
+            <div class="change-link">
+                <a href="#">Change <i class="fas fa-chevron-right"></i></a>
+            </div>
+        </div>
+        
+        <div class="payment-details">
+            <div class="payment-method">
+                <h3>Pay Now with M-Pesa</h3>
+                <p>Pay now fast and securely with your Mpesa account.</p>
+                <div class="mpesa-logo">
+                    <img src="{% static 'en/images/mpesa.png' %}" alt="M-Pesa">
+                </div>
+            </div>
+        </div>
+        
+        <div class="back-link">
+            <a href="#"><i class="fas fa-chevron-left"></i> Go back & continue shopping</a>
+        </div>
+    </div>
+    
+    <div class="order-summary">
+        <h2>Order summary</h2>
+        <div class="summary-details">
+            <div class="summary-row">
+                <span><strong>Total Items :</strong> {{ cart_total_items }}</span>
+                <span class="price">KSh {{sub_total|floatformat:2}}</span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery fees</span>
+                <span class="price">KSh {{ delivery_fee }}</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total</span>
+                <span class="price">KSh {{cart_total|floatformat:2}}</span>
+            </div>
+        </div>
+        
+        <div class="voucher-section">
+            <form method="POST" action="#">
+                {% csrf_token %}
+                <div class="voucher-input">
+                    <input type="text" name="voucher_code" placeholder="Enter code here">
+                    <button type="submit">APPLY</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="confirm-order">
+            <form action="#" method="get">
+                {% csrf_token %}
+                <button type="submit">Confirm order</button>
+            </form>
+        </div>
+        
+        <div class="terms-notice">
+            <p>By proceeding, you are automatically accepting the <a href="#">Terms & Conditions</a></p>
+        </div>
+    </div>
+</div>
+{% endblock body %}

@@ -159,10 +159,12 @@
                     {% endif %}
                     
 
-                    <form class="header-form">
-                        <input type="text" placeholder="Search anything...">
-                        <button><i class="fas fa-search"></i></button>
+                    <form class="header-form" action="{% url 'product:search_products' %}" method="GET">
+                        <input type="text" name="q" placeholder="Search anything..." value="{{ query }}">
+                        <button type="submit"><i class="fas fa-search"></i></button>
                     </form>
+                    
+                    
 
                     <div class="header-widget-group">
                         <a href="#" class="header-widget" title="Wishlist">

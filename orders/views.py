@@ -27,9 +27,16 @@ class OrderList(LoginRequiredMixin,ListView):
 def add_to_cart(request):
     quantity = int(request.POST['quantity'])
     product = get_object_or_404(Product, id=request.POST['product_id'])
+
+    size = request.POST.get('size')  # Get selected size
+
+    if not size:
+            messages.error(request, "Please select a shoe size.")
+            return redirect(f'/products/{product.slug}')
+    
     cart, created = Cart.objects.get_or_create(user=request.user, status='InProgress')
     
-    cart_detail, created = CartDetail.objects.get_or_create(cart=cart, product=product)
+    cart_detail, created = CartDetail.objects.get_or_create(cart=cart, product=product , size=size)
     cart_detail.quantity = quantity
     cart_detail.total = round(quantity * product.price, 2)
     cart_detail.save()

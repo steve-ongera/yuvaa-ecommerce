@@ -35,8 +35,12 @@ class CartDetail(models.Model):
     quantity = models.IntegerField(default=1)
     total = models.FloatField(null=True,blank=True)
 
+    size = models.CharField(max_length=10, null=True, blank=True)  # Store size as a string
+
     def __str__(self):
-        return str(self.cart)
+        return f"{self.cart} : {self.product.name} - Size: {self.size}"
+
+    
     
 
 

@@ -160,3 +160,14 @@ def add_review(request,slug):
 
 
     # return redirect(f'/products/{product.slug}')
+
+
+
+from django.shortcuts import render
+from product.models import Product
+
+def search_products(request):
+    query = request.GET.get('q', '')  # Get search query from the URL
+    results = Product.objects.filter(name__icontains=query) if query else Product.objects.all()
+
+    return render(request, 'product/search_results.html', {'results': results, 'query': query})

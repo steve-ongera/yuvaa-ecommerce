@@ -65,8 +65,11 @@ class Order(models.Model):
     coupon = models.ForeignKey('Coupon',related_name='order_coupon',on_delete=models.SET_NULL,null=True,blank=True)
     total_After_coupon = models.FloatField(null=True,blank=True)
     #new fields 
+    delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     pickup_station = models.ForeignKey(PickupStation, on_delete=models.SET_NULL, null=True, blank=True)
-    
+    delivery_start_date = models.DateField(null=True, blank=True)
+    delivery_end_date = models.DateField(null=True, blank=True)
+
     #tracking mpesa payment 
     mpesa_checkout_id = models.CharField(max_length=100, null=True, blank=True)
     payment_status = models.CharField(max_length=20, default='pending')  # pending, completed, failed

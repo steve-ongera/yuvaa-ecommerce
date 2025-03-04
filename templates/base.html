@@ -158,11 +158,13 @@
                         </a>
                     {% endif %}
                     
-
-                    <form class="header-form" action="{% url 'product:search_products' %}" method="GET">
-                        <input type="text" name="q" placeholder="Search anything..." value="{{ query }}">
-                        <button type="submit"><i class="fas fa-search"></i></button>
-                    </form>
+             
+                      <form class="header-form" action="{% url 'product:search' %}" method="GET">
+                      
+                          <input type="text" name="q" value="{{ query }}" placeholder="Search anything..." >
+                          <button type="submit"><i class="fas fa-search"></i></button>
+                      
+                      </form>
                     
                     
 

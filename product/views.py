@@ -9,6 +9,7 @@ from .tasks import send_emails
 
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.core.paginator import Paginator
 # Create your views here.
 
 
@@ -166,8 +167,22 @@ def add_review(request,slug):
 from django.shortcuts import render
 from product.models import Product
 
-def search_products(request):
-    query = request.GET.get('q', '')  # Get search query from the URL
-    results = Product.objects.filter(name__icontains=query) if query else Product.objects.all()
 
-    return render(request, 'product/search_results.html', {'results': results, 'query': query})
+
+def search_view(request):
+    query = request.GET.get('q', '')  # Get search query
+    
+    if query:
+        results = Product.objects.filter(name__icontains=query)
+    else:
+        results = Product.objects.all()
+
+    # Apply pagination (12 products per page)
+    paginator = Paginator(results, 12)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'product/results.html', {
+        'page_obj': page_obj,
+        'query': query  # Ensure query is passed
+    })

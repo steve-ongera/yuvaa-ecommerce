@@ -1,19 +1,26 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Search Results for "{{ query }}"</h2>
+<div class="col-lg-9">
+    <div class="row">
+        <div class="col-lg-12">
+            <h2>Search Results for "{{ query }}"</h2>
 
-{% if results %}
-    <ul>
-        {% for product in results %}
-            <li>
-                <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No products found.</p>
-{% endif %}
+            {% if results %}
+                <ul>
+                    {% for product in results %}
+                        <li>
+                            <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No products found.</p>
+            {% endif %}
+            </div>
+            
+        </div>
+    </div>            
 
 {% endblock %}
 

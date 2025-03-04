@@ -162,40 +162,70 @@ def checkout(request):
 
 
 
+
 @login_required
 @require_POST
 def update_pickup_station(request):
     try:
-        # Get the station_id from the request
         data = json.loads(request.body)
         station_id = data.get('station_id')
         
+        # Extensive logging
+        print(f"Received station_id: {station_id}")
+        
         user = request.user
         
-        # Get the user's cart
-        cart = Cart.objects.get(user=user, status='InProgress')
+        # Get the user's cart with detailed logging
+        try:
+            cart = Cart.objects.get(user=user, status='InProgress')
+            print(f"Cart found: {cart.id}")
+            print(f"Cart Total: {cart.cart_total()}")
+        except Cart.DoesNotExist:
+            print("No active cart found!")
+            return JsonResponse({
+                'success': False, 
+                'error': 'No active cart found'
+            })
         
-        # Get the user's pending order
-        order, created = Order.objects.get_or_create(user=user, status='pending')
+        # Get the user's pending order with detailed logging
+        try:
+            order = Order.objects.get(user=user, status='pending')
+            print(f"Order found: {order.id}")
+        except Order.DoesNotExist:
+            print("No pending order found!")
+            return JsonResponse({
+                'success': False, 
+                'error': 'No pending order found'
+            })
         
-        # Get the pickup station from the database
-        pickup_station = get_object_or_404(PickupStation, id=station_id)
+        # Get the pickup station with detailed logging
+        try:
+            pickup_station = get_object_or_404(PickupStation, id=station_id)
+            print(f"Pickup Station: {pickup_station.name}")
+            print(f"Delivery Fee: {pickup_station.delivery_fee}")
+        except Exception as e:
+            print(f"Error finding pickup station: {e}")
+            return JsonResponse({
+                'success': False, 
+                'error': 'Pickup station not found'
+            })
         
-        # Update the pickup station for the order
+        # Update order details
         order.pickup_station = pickup_station
-        order.delivery_fee = pickup_station.delivery_fee  # Update delivery fee
+        order.delivery_fee = float(pickup_station.delivery_fee or 0.0)
         
-        # Calculate cart total (use the cart's method)
-        cart_total = cart.cart_total()
-        
-        # Calculate new total (cart total + delivery fee)
+        # Calculate totals
+        cart_total = float(cart.cart_total() or 0.0)
         order_total = cart_total + order.delivery_fee
 
-        # Save the order with updated details
+        print(f"Cart Total: {cart_total}")
+        print(f"Delivery Fee: {order.delivery_fee}")
+        print(f"Order Total: {order_total}")
+
+        # Save the order
         order.total_price = order_total
         order.save()
 
-        # Return updated details
         return JsonResponse({
             'success': True,
             'station_name': pickup_station.name,
@@ -206,7 +236,7 @@ def update_pickup_station(request):
         })
     
     except Exception as e:
-        # If any error occurs, return a failure response
+        print(f"Unexpected error: {e}")
         return JsonResponse({
             'success': False, 
             'error': str(e)

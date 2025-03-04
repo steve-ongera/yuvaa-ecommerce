@@ -1,9 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
-from product.models import Product
+from product.models import Product , PickupStation
 import datetime
 from django.utils import timezone
 from utils.generate_code import generate_code
+import random
+import string
+from django.db import models
+from django.utils import timezone
 
 CART_STATUS = [
     ('InProgress' , 'InProgress'),
@@ -60,6 +64,9 @@ class Order(models.Model):
     delivery_time = models.DateTimeField(null=True,blank=True)
     coupon = models.ForeignKey('Coupon',related_name='order_coupon',on_delete=models.SET_NULL,null=True,blank=True)
     total_After_coupon = models.FloatField(null=True,blank=True)
+    #new fields 
+    pickup_station = models.ForeignKey(PickupStation, on_delete=models.SET_NULL, null=True, blank=True)
+    
     #tracking mpesa payment 
     mpesa_checkout_id = models.CharField(max_length=100, null=True, blank=True)
     payment_status = models.CharField(max_length=20, default='pending')  # pending, completed, failed
@@ -86,6 +93,61 @@ class OrderDetail(models.Model):
 
     def __str__(self):
         return str(self.order)
+    
+
+
+
+
+
+# class Transaction(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     order = models.ForeignKey('Order', on_delete=models.CASCADE)
+#     name = models.CharField(max_length=255)
+#     id_number = models.CharField(max_length=20)
+#     phone_number = models.CharField(max_length=15)
+#     amount = models.DecimalField(max_digits=10, decimal_places=2)
+#     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed')], default='pending')
+#     timestamp = models.DateTimeField(auto_now_add=True)
+#     pickup_station = models.ForeignKey(PickupStation, on_delete=models.SET_NULL, null=True, blank=True)
+#     transaction_id = models.CharField(max_length=10, unique=True, blank=True, null=True)  # New field for alphanumeric ID
+
+    
+
+#     def get_order_items_display(self):
+#         items = self.order.items.all()
+#         if not items:
+#             return "No items"
+        
+#         item_strings = [f"{item.quantity} x {item.product.name}" for item in items]
+#         return ", ".join(item_strings)
+
+#     def generate_transaction_id(self):
+#         """Generate a random 10-character alphanumeric string."""
+#         return ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+
+#     def save(self, *args, **kwargs):
+#         # Automatically generate transaction ID if it's not already set
+#         if not self.transaction_id:
+#             self.transaction_id = self.generate_transaction_id()
+
+        
+#         super().save(*args, **kwargs)  # Call the real save() method to save the model
+
+#     def __str__(self):
+#         items_summary = self.get_order_items_display()
+#         return f"Transaction {self.transaction_id} - {self.user.username} ({items_summary})"
+
+
+#     @property
+#     def delivery_dates(self):
+#         """Fetch delivery start and end dates from the associated order."""
+#         if self.order:
+#             return {
+#                 "start_date": self.order.delivery_start_date or "Not Set",
+#                 "end_date": self.order.delivery_end_date or "Not Set"
+#             }
+#         return {"start_date": "N/A", "end_date": "N/A"}
+
 
     
 

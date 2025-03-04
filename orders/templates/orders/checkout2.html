@@ -256,7 +256,7 @@
                     
                     // Function to send AJAX request to update pickup station
                     function updatePickupStation(stationId) {
-                        fetch('/update-pickup-station/', {
+                        fetch("/orders/update-pickup-station/", {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -402,7 +402,7 @@
         </div>
         
         <div class="confirm-order">
-            <form action="#" method="get">
+            <form action="{% url 'orders:order_summary'%}" method="get">
                 {% csrf_token %}
                 <button type="submit">Confirm order</button>
             </form>

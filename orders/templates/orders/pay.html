@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-10">
+    <h2 class="text-2xl font-bold text-center text-gray-800">Payment Details</h2>
+
+    <p class="text-lg font-semibold text-green-600 text-center my-3">
+        Total Amount: Ksh {{ order_total }}
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <label class="block mb-2 text-gray-700">Full Name:</label>
+        <input type="text" name="name" required class="w-full p-2 border border-gray-300 rounded-lg mb-3">
+
+        <label class="block mb-2 text-gray-700">ID Number:</label>
+        <input type="text" name="id_number" required class="w-full p-2 border border-gray-300 rounded-lg mb-3">
+
+        <label class="block mb-2 text-gray-700">Phone Number:</label>
+        <input type="text" name="phone_number" required class="w-full p-2 border border-gray-300 rounded-lg mb-3">
+
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+            Pay
+        </button>
+    </form>
+</div>
+
+
+{% endblock %}

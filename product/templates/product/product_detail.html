@@ -208,6 +208,17 @@
                                     
                                 </ul>
                             </div>
+
+                            <div class="details-list-group">
+                                <label class="details-list-title">Shoe size:</label>
+                                <ul class="details-tag-list">
+                                    {% for size in object.available_sizes.all %}
+                                        <li><a href="#">{{size}}</a></li>
+                                    {% endfor %}
+                                    
+                                </ul>
+                            </div>
+
                             <div class="details-list-group">
                                 <label class="details-list-title">Share:</label>
                                 <ul class="details-share-list">

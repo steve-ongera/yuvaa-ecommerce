@@ -277,7 +277,7 @@
                                 </div>
                                 <div class="feature-content">
                                     <h6 class="feature-name">
-                                        <a href="product-video.html">{{item}}</a>
+                                        <a href="{% url 'product:product-detail' item.slug %}">{{item}}</a>
                                     </h6>
                                     <div class="product-rating">
                                         <i class="icofont-star {% if item.avg_rate > 0 %}active{% endif %} "></i>
@@ -361,7 +361,7 @@
                                                 <a href="">({{item.rating}})</a>
                                             </div>
                                             <h6 class="product-name">
-                                                <a href="product-video.html">{{item}}</a>
+                                                <a href="{% url 'product:product-detail' item.slug %}">{{item}}</a>
                                             </h6>
                                             <h6 class="product-price">
                                                 <span>ksh {{item.price}}</span>

@@ -98,6 +98,17 @@ def checkout(request):
         order.total_price = cart_total + order.delivery_fee
         order.save()
 
+
+        # Move cart items to order items
+        for cart_item in cart_detail:
+            OrderDetail.objects.create(
+                order=order,
+                product=cart_item.product,
+                quantity=cart_item.quantity,
+                price=cart_item.product.price,  # Store price at the time of order
+                total=cart_item.product.price * cart_item.quantity  # Calculate total price per item
+            )
+
         # Calculate delivery date (3-2 days after order but not on weekends)
         def calculate_delivery_date(order_date):
             delivery_date = order_date + timedelta(days=2)  # Default to 2 days after

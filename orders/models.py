@@ -104,11 +104,6 @@ class OrderDetail(models.Model):
     quantity = models.IntegerField()
     total = models.FloatField(null=True, blank=True)  # Ensure this field exists and is calculated
 
-    def save(self, *args, **kwargs):
-        if not self.code:  # Generate a unique code only if it doesn't exist
-            self.code = str(uuid.uuid4())[:8]  # Generates a short, unique code
-        super(Order, self).save(*args, **kwargs)
-
     def __str__(self):
         return str(self.order)
     

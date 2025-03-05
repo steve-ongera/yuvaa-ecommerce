@@ -243,33 +243,120 @@ def update_pickup_station(request):
         })
 
 
-def order_summary(request):
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Order, Transaction, Cart, CartDetail
+@login_required
+def pay_view(request):
+    user = request.user
+
     # Retrieve the user's active cart
-    cart = get_object_or_404(Cart, user=request.user, status="InProgress")
-    
+    cart = get_object_or_404(Cart, user=user, status="InProgress")
+
     # Get or create an order associated with the cart
     order, created = Order.objects.get_or_create(
-        user=request.user, 
-        status='Received',
+        user=user, 
+        status='pending',
         defaults={'total_After_coupon': cart.total_After_coupon or cart.cart_total()}
     )
-    
-    # Get all cart details (products in the cart)
+
+    # Retrieve cart details (products in the cart)
     cart_details = cart.cart_detail.all()
-    
-    # Calculate the total price before and after applying the coupon
+
+    # Calculate total prices
     total_before_coupon = cart.cart_total()
     total_after_coupon = cart.total_After_coupon if cart.total_After_coupon else total_before_coupon
-    
-    # Prepare context for the template
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        id_number = request.POST.get("id_number")
+        phone_number = request.POST.get("phone_number")
+
+        if not all([name, id_number, phone_number]):
+            messages.error(request, "All fields are required.")
+            return redirect('pay')
+
+        # Determine the correct total amount
+        total_amount = total_after_coupon  
+
+        # Create a transaction
+        transaction = Transaction.objects.create(
+            user=user,
+            order=order,
+            name=name,
+            id_number=id_number,
+            phone_number=phone_number,
+            amount=total_amount,  # Fixed to use the correct total
+            status="completed",
+            pickup_station=order.pickup_station
+        )
+
+        # Update the order status
+        order.status = 'completed'
+        order.save()
+
+        # Reduce quantity for each product in the cart
+        for item in cart_details:
+            product = item.product
+            if product.quantity >= item.quantity:
+                product.quantity -= item.quantity
+                product.save()
+            else:
+                messages.error(request, f"Not enough quantity for {product.name}")
+                return redirect('/')
+
+        # Clear the cart
+        cart.cart_detail.all().delete()
+        cart.status = "Completed"
+        cart.save()
+
+        messages.success(request, "Payment successful! Your order has been placed.")
+        return redirect('orders:order_success')
+
+    # Prepare context for rendering the template
     context = {
-        'cart': cart,
-        'order': order,  # Include the order object in the context
-        'cart_details': cart_details,
-        'total_before_coupon': total_before_coupon,
-        'total_after_coupon': total_after_coupon,
+        "cart": cart,
+        "order": order,
+        "cart_details": cart_details,
+        "total_before_coupon": total_before_coupon,
+        "total_after_coupon": total_after_coupon,
     }
-    return render(request, 'orders/order_summary.html', context)
+
+    return render(request, "orders/pay.html", context)
+
+
+def order_success(request):
+    return render(request, 'orders/order_success.html')
+
+
+# def order_summary(request):
+#     # Retrieve the user's active cart
+#     cart = get_object_or_404(Cart, user=request.user, status="InProgress")
+    
+#     # Get or create an order associated with the cart
+#     order, created = Order.objects.get_or_create(
+#         user=request.user, 
+#         status='Received',
+#         defaults={'total_After_coupon': cart.total_After_coupon or cart.cart_total()}
+#     )
+    
+#     # Get all cart details (products in the cart)
+#     cart_details = cart.cart_detail.all()
+    
+#     # Calculate the total price before and after applying the coupon
+#     total_before_coupon = cart.cart_total()
+#     total_after_coupon = cart.total_After_coupon if cart.total_After_coupon else total_before_coupon
+    
+#     # Prepare context for the template
+#     context = {
+#         'cart': cart,
+#         'order': order,  # Include the order object in the context
+#         'cart_details': cart_details,
+#         'total_before_coupon': total_before_coupon,
+#         'total_after_coupon': total_after_coupon,
+#     }
+#     return render(request, 'orders/order_summary.html', context)
 
 
 

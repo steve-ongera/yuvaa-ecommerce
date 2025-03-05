@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Success{% endblock %}
+
+{% block body %}
+<link rel="stylesheet" href="{% static 'css/success.css' %}">
+<script src="{% static 'js/messsage.js' %}"></script>
+
+{% if messages %}
+<div class="message-container">
+    {% for message in messages %}
+    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="success-container">
+  <div class="success-card">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" width="64" height="64">
+        <circle cx="12" cy="12" r="11" fill="#4CAF50" />
+        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" fill="white" />
+      </svg>
+    </div>
+    <h1>Success!</h1>
+    <p>Your operation has been completed successfully.</p>
+    <div class="success-actions">
+      <a href="{% url 'home' %}" class="btn-primary">Back to Home</a>
+     
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/messsage.js' %}"></script>
+{% endblock body %}

@@ -402,7 +402,7 @@
         </div>
         
         <div class="confirm-order">
-            <form action="{% url 'orders:order_summary'%}" method="get">
+            <form action="{% url 'orders:pay'%}" method="get">
                 {% csrf_token %}
                 <button type="submit">Confirm order</button>
             </form>

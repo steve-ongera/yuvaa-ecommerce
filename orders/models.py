@@ -8,6 +8,7 @@ import random
 import string
 from django.db import models
 from django.utils import timezone
+from datetime import timedelta, date
 
 CART_STATUS = [
     ('InProgress' , 'InProgress'),
@@ -64,6 +65,9 @@ class Order(models.Model):
     delivery_time = models.DateTimeField(null=True,blank=True)
     coupon = models.ForeignKey('Coupon',related_name='order_coupon',on_delete=models.SET_NULL,null=True,blank=True)
     total_After_coupon = models.FloatField(null=True,blank=True)
+
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)  # Ensure this field exists
+    
     #new fields 
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     pickup_station = models.ForeignKey(PickupStation, on_delete=models.SET_NULL, null=True, blank=True)
@@ -75,9 +79,10 @@ class Order(models.Model):
     payment_status = models.CharField(max_length=20, default='pending')  # pending, completed, failed
     mpesa_receipt_number = models.CharField(max_length=50, null=True, blank=True)
     payment_phone = models.CharField(max_length=15, null=True, blank=True)
+
     
     def __str__(self):
-        return str(self.user)
+        return f'{self.code} - {self.user}'
     
 
 

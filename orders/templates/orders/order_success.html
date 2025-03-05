@@ -3,18 +3,84 @@
 {% block title %}Success{% endblock %}
 
 {% block body %}
-<link rel="stylesheet" href="{% static 'css/success.css' %}">
-<script src="{% static 'js/messsage.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'en/css/success.css' %}">
+<style>
+.message-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;  /* Changed to right side */
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateX(120%);  /* Start from the right */
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  opacity: 1;
+}
+
+.message.error {
+  background-color: #f44336;
+}
+
+.message.success {
+  background-color: #4caf50;
+}
+
+.message.slide-in {
+  transform: translateX(0);  /* Slide in to normal position */
+}
+
+.message.fade-out {
+  opacity: 0;
+  transform: translateX(120%);  /* Slide out to the right */
+}
+
+
+
+</style>    
 
 {% if messages %}
 <div class="message-container">
-    {% for message in messages %}
-    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-        {{ message }}
-    </div>
-    {% endfor %}
+  {% for message in messages %}
+  <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+      {{ message }}
+  </div>
+  {% endfor %}
 </div>
 {% endif %}
+
+<!-- Include this at the bottom of your home.html -->
+<script>
+  // Wait for the page to load
+  document.addEventListener("DOMContentLoaded", function() {
+      // Select all message divs
+      const messages = document.querySelectorAll('.message');
+      
+      messages.forEach((msg, index) => {
+          // Slide in animation from right
+          setTimeout(() => {
+              msg.classList.add('slide-in');
+          }, index * 200); // Delay each message slightly
+
+          // Auto remove after 5 seconds
+          setTimeout(() => {
+              msg.classList.add('fade-out');
+              msg.addEventListener('transitionend', () => {
+                  msg.remove();
+              });
+          }, 5000);
+      });
+  });
+</script>
 
 <div class="success-container">
   <div class="success-card">

@@ -198,13 +198,20 @@ class Coupon(models.Model):
         super(Coupon, self).save(*args, **kwargs)
 
 
-class Payment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    payment_id = models.CharField(max_length=100)
-    payment_method = models.CharField(max_length=100)
-    amount_paid = models.CharField(max_length=100) # this is the total amount paid
-    status = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
 
+    
+
+class MpesaPayment(models.Model):
+    phone_number = models.CharField(max_length=15)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    reference = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+    account_number = models.CharField(max_length=50, default='0757790687')
+    transaction_id = models.CharField(max_length=50, blank=True)
+    checkout_request_id = models.CharField(max_length=50, blank=True)
+    transaction_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, default='PENDING')
+    receipt_number = models.CharField(max_length=50, blank=True)
+    
     def __str__(self):
-        return self.payment_id
+        return f"{self.phone_number} - {self.amount} - {self.status}"

@@ -238,13 +238,14 @@ EMAIL_HOST_USER = 'innovationhubsoftwaresltd@gmail.com'
 EMAIL_HOST_PASSWORD = 'wtzg mvcn ztoe qige'
 
 
-# Add these configurations at the end of your settings.py file
-MPESA_ENV = 'sandbox'  # Change to 'production' when you're ready for production
-MPESA_CONSUMER_KEY = 'gmGAjd7HDIoyOHKJavOAgcy4HUWFl3SLzc70jJzB4JYAG0Q4'
-MPESA_CONSUMER_SECRET = 'pR1U2pgLoGuC5IDZqNHAOyJwfvjOJryA0JAeBlpn4X8NBvZDaQ4xiHWGHGLOj1bZ'
-MPESA_SHORTCODE = '174379'  # Example sandbox shortcode, use your production shortcode when live
-MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
-MPESA_CALLBACK_URL = 'https://yourdomain.com/payment_callback/'  # URL to handle M-Pesa responses
+
+MPESA_ENVIRONMENT = 'sandbox'  # Change to 'production' for live environment
+MPESA_CONSUMER_KEY = 'your_consumer_key'  # Get from Safaricom Developer Portal
+MPESA_CONSUMER_SECRET = 'your_consumer_secret'  # Get from Safaricom Developer Portal
+MPESA_SHORTCODE = '174379'  # Your Paybill number
+MPESA_PASSKEY = 'your_passkey'  # Get from Safaricom
+MPESA_CONFIRMATION_URL = 'https://your-domain.com/mpesa/confirmation/'  # For C2B integration
+MPESA_VALIDATION_URL = 'https://your-domain.com/mpesa/validation/'  # For C2B integration
 
 
 from django.contrib.messages import constants as messages

@@ -1,0 +1,57 @@
+<!-- templates/orders/payment_waiting.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Payment in Progress</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="spinner-border text-primary mb-4" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    
+                    <h5>Please check your phone</h5>
+                    <p>We've sent an M-Pesa payment request to {{ transaction.phone_number }}</p>
+                    <p>Amount: KSh {{ transaction.amount }}</p>
+                    
+                    <div class="alert alert-info">
+                        <p><strong>1.</strong> Enter your M-Pesa PIN when prompted</p>
+                        <p><strong>2.</strong> This page will automatically update once payment is confirmed</p>
+                    </div>
+                    
+                    <div id="status-message"></div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'orders:pay' %}" class="btn btn-outline-secondary">Cancel Payment</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add JavaScript to check transaction status -->
+<script>
+    function checkTransactionStatus() {
+        fetch('{% url "orders:check_transaction_status" transaction.id %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'completed') {
+                    window.location.href = '{% url "orders:order_success" %}';
+                } else if (data.status === 'failed') {
+                    document.getElementById('status-message').innerHTML = 
+                        '<div class="alert alert-danger">Payment failed. Please try again.</div>';
+                    clearInterval(statusChecker);
+                }
+            })
+            .catch(error => console.error('Error checking status:', error));
+    }
+    
+    // Check every 5 seconds
+    const statusChecker = setInterval(checkTransactionStatus, 5000);
+</script>
+{% endblock %}

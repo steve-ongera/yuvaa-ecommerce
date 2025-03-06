@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import OrderList , checkout ,add_to_cart , remove_from_cart ,  mpesa_initiate_payment,mpesa_payment_success,mpesa_payment_failed , mpesa_callback , check_transaction_status , update_pickup_station , pay_view ,order_success ,transaction_list ,transaction_detail
-
+from .views import OrderList , checkout ,add_to_cart , remove_from_cart, update_pickup_station , pay_view ,order_success ,transaction_list ,transaction_detail 
+from . import views
 from .api import CartDetailCreateAPI , OrderListAPI , OrderDetailAPI , CreateOrderAPI , ApplyCouponAPI 
 
 
@@ -20,11 +20,14 @@ urlpatterns = [
     path('transactions/<str:transaction_id>/', transaction_detail, name='transaction_detail'),
     #mpesa integrations
 
-    path('order/<int:order_id>/mpesa/', mpesa_initiate_payment, name='mpesa_initiate_payment'),
-    path('api/mpesa-callback/', mpesa_callback, name='mpesa_callback'),
-    path('order/mpesa/success/', mpesa_payment_success, name='mpesa_payment_success'),
-    path('order/mpesa/failed/', mpesa_payment_failed, name='mpesa_payment_failed'),
-    path('mpesa/check-status/<str:checkout_request_id>/', check_transaction_status, name='mpesa_check_status'),
+
+    # Add these new URLs
+    # New M-Pesa Paybill specific URLs
+    path('mpesa/stk-callback/', views.mpesa_stk_callback, name='mpesa_stk_callback'),
+    path('mpesa/validation/', views.mpesa_validation, name='mpesa_validation'),
+    path('mpesa/confirmation/', views.mpesa_confirmation, name='mpesa_confirmation'),
+    path('payment-waiting/<int:transaction_id>/', views.payment_waiting, name='payment_waiting'),
+    path('check-transaction-status/<int:transaction_id>/', views.check_transaction_status, name='check_transaction_status'),
 
 
     # api  

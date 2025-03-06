@@ -1,0 +1,134 @@
+<!-- templates/orders/pay.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_details %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.price }}</td>
+                                    <td>{{ item.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                    <td>{{ total_before_coupon }}</td>
+                                </tr>
+                                {% if total_before_coupon != total_after_coupon %}
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Discount:</strong></td>
+                                    <td>{{ total_before_coupon|sub:total_after_coupon }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>After Discount:</strong></td>
+                                    <td>{{ total_after_coupon }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Delivery Fee:</strong></td>
+                                    <td>{{ delivery_fee }}</td>
+                                </tr>
+                                <tr class="table-primary">
+                                    <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
+                                    <td><strong>{{ final_total }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Payment Details</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title text-center mb-4">M-Pesa Paybill Payment</h5>
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_number" class="form-label">ID Number</label>
+                            <input type="text" class="form-control" id="id_number" name="id_number" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">M-Pesa Phone Number</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number" 
+                                   placeholder="e.g. 07XXXXXXXX" required>
+                            <small class="text-muted">Phone number registered with M-Pesa</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <small>
+                                    <i class="fa fa-info-circle"></i> You will receive a prompt on your phone to enter your M-Pesa PIN.
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">Pay Now (KSh {{ final_total }})</button>
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <small>
+                                <a href="{% url 'orders:checkout' %}" class="text-decoration-none">
+                                    <i class="fa fa-arrow-left"></i> Back to Checkout
+                                </a>
+                            </small>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <small>Secured by M-Pesa</small>
+                </div>
+            </div>
+            
+            <!-- Manual Payment Instructions -->
+            <div class="card mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Pay Manually via M-Pesa</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Go to M-Pesa on your phone</li>
+                        <li>Select "Pay Bill"</li>
+                        <li>Enter Business Number: <strong>{{ MPESA_SHORTCODE }}</strong></li>
+                        <li>Enter Account Number: <strong>Order-{{ order.id }}</strong></li>
+                        <li>Enter Amount: <strong>{{ final_total }}</strong></li>
+                        <li>Enter your M-Pesa PIN</li>
+                        <li>Confirm and complete payment</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

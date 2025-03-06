@@ -268,7 +268,8 @@ def update_pickup_station(request):
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Order, Transaction, Cart, CartDetail
+from .models import Order, Transaction, Cart, CartDetail, Product
+
 @login_required
 def pay_view(request):
     user = request.user
@@ -276,15 +277,22 @@ def pay_view(request):
     # Retrieve the user's active cart
     cart = get_object_or_404(Cart, user=user, status="InProgress")
 
+    # Retrieve cart details (products in the cart)
+    cart_details = cart.cart_detail.all()
+
+    # Validate stock before proceeding
+    for item in cart_details:
+        product = item.product
+        if product.quantity < item.quantity:
+            messages.error(request, f"Not enough stock for {product.name}. Available: {product.quantity}")
+            return redirect('orders:checkout')  # Redirect user to cart page
+
     # Get or create an order associated with the cart
     order, created = Order.objects.get_or_create(
         user=user, 
         status='pending',
         defaults={'total_After_coupon': cart.total_After_coupon or cart.cart_total()}
     )
-
-    # Retrieve cart details (products in the cart)
-    cart_details = cart.cart_detail.all()
 
     # Calculate total prices
     total_before_coupon = cart.cart_total()
@@ -309,7 +317,7 @@ def pay_view(request):
             name=name,
             id_number=id_number,
             phone_number=phone_number,
-            amount=total_amount,  # Fixed to use the correct total
+            amount=total_amount,
             status="completed",
             pickup_station=order.pickup_station
         )
@@ -321,12 +329,8 @@ def pay_view(request):
         # Reduce quantity for each product in the cart
         for item in cart_details:
             product = item.product
-            if product.quantity >= item.quantity:
-                product.quantity -= item.quantity
-                product.save()
-            else:
-                messages.error(request, f"Not enough quantity for {product.name}")
-                return redirect('/')
+            product.quantity -= item.quantity
+            product.save()
 
         # Clear the cart
         cart.cart_detail.all().delete()

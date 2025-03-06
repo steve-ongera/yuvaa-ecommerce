@@ -9,7 +9,7 @@ app_name = 'orders'
 
 urlpatterns = [
     path('', OrderList.as_view()),
-    path('checkout',checkout ),
+    path('checkout', checkout , name="checkout" ),
     path('add_to_cart', add_to_cart ,name ='add_to_cart'),
     path('<int:id>/remove-from-cart',remove_from_cart),
     path('update-pickup-station/', update_pickup_station, name='update_pickup_station'),

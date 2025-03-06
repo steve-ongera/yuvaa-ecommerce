@@ -269,6 +269,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Order, Transaction, Cart, CartDetail, Product
+from decimal import Decimal
 
 @login_required
 def pay_view(request):
@@ -291,12 +292,21 @@ def pay_view(request):
     order, created = Order.objects.get_or_create(
         user=user, 
         status='pending',
-        defaults={'total_After_coupon': cart.total_After_coupon or cart.cart_total()}
+        defaults={
+            'total_After_coupon': cart.total_After_coupon or cart.cart_total(),
+            'total_price': cart.total_After_coupon or cart.cart_total(),  # Ensure total_price is updated
+        }
     )
+
+    # Fetch delivery fee (If not set, default to 0)
+    delivery_fee = order.delivery_fee if order.delivery_fee else 0.00
 
     # Calculate total prices
     total_before_coupon = cart.cart_total()
     total_after_coupon = cart.total_After_coupon if cart.total_After_coupon else total_before_coupon
+
+    # Final total including delivery fee
+    final_total = Decimal(total_after_coupon) + delivery_fee  
 
     if request.method == "POST":
         name = request.POST.get("name")
@@ -307,26 +317,24 @@ def pay_view(request):
             messages.error(request, "All fields are required.")
             return redirect('pay')
 
-        # Determine the correct total amount
-        total_amount = total_after_coupon  
-
-        # Create a transaction
+        # Create a transaction with the correct total
         transaction = Transaction.objects.create(
             user=user,
             order=order,
             name=name,
             id_number=id_number,
             phone_number=phone_number,
-            amount=total_amount,
+            amount=final_total,  # ✅ Ensure the total includes the delivery fee
             status="completed",
             pickup_station=order.pickup_station
         )
 
-        # Update the order status
+        # Update order status and total price
         order.status = 'completed'
+        order.total_price = final_total  # ✅ Update total_price with delivery fee included
         order.save()
 
-        # Reduce quantity for each product in the cart
+        # Reduce stock for each product in the cart
         for item in cart_details:
             product = item.product
             product.quantity -= item.quantity
@@ -347,9 +355,12 @@ def pay_view(request):
         "cart_details": cart_details,
         "total_before_coupon": total_before_coupon,
         "total_after_coupon": total_after_coupon,
+        "delivery_fee": delivery_fee,  # ✅ Pass delivery fee to the template
+        "final_total": final_total,  # ✅ Pass final total including delivery fee
     }
 
     return render(request, "orders/pay.html", context)
+
 
 
 def order_success(request):

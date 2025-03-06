@@ -198,6 +198,12 @@
                             <h3 class="details-price">
                                 <span>ksh {{object.price}}</span>
                             </h3>
+                            {% if object.quantity < 1 %}
+                                <p style="color: red; font-weight: bold;">Out of Stock</p>
+                            {% else %}  
+                                <p style="color: green; font-weight: bold;">{{ object.quantity }} In Stock</p>  
+                            {% endif %}
+
                             <p class="details-desc">{{object.subtitle}}</p>
                             <div class="details-list-group">
                                 <label class="details-list-title">tags:</label>
@@ -232,8 +238,8 @@
                                 {% if user.is_authenticated %}
                                     <form action="{% url 'orders:add_to_cart' %}" method="post">
                                         {% csrf_token %}
+                                        
                                         <!-- Shoe Size Selection -->
-
                                         <div class="size-selector">
                                             <label for="size">Select Size:</label>
                                             <select name="size" required class="size-dropdown">
@@ -243,8 +249,8 @@
                                                 {% endfor %}
                                             </select>
                                         </div>
-                                        
 
+                                        <!-- Quantity Selector -->
                                         <div class="quantity-control" style="display: flex; align-items: center; margin-bottom: 10px;">
                                             <button type="button" class="quantity-btn minus" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f8f8f8; cursor: pointer;">
                                                 <i class="fas fa-minus"></i>
@@ -255,24 +261,27 @@
                                                 <i class="fas fa-plus"></i>
                                             </button>
                                         </div>
-                                        <input type="hidden" name="product_id" value="{{ object.id }}">
+
+                                        <!-- Hidden Product ID -->
+                                        <input type="hidden" name="product_id" value="{{ object.id }}" data-quantity="{{ object.quantity }}">
+
+                                        <!-- Add to Cart Button -->
                                         <button type="submit" class="product-add" title="Add to Cart">
                                             <i class="fas fa-shopping-basket"></i>
                                             <span>add to cart</span>
                                         </button>
                                     </form>
+
                                     <script>
                                         document.addEventListener('DOMContentLoaded', function() {
                                             const minusBtn = document.querySelector('.quantity-btn.minus');
                                             const plusBtn = document.querySelector('.quantity-btn.plus');
                                             const quantityDisplay = document.querySelector('.quantity-display');
                                             const quantityInput = document.querySelector('#quantity-input');
+                                            const maxQuantity = parseInt(document.querySelector('[name="product_id"]').dataset.quantity) || 1; // Get stock quantity
                                             
-                                            // Minimum quantity value
                                             const MIN_QUANTITY = 1;
-                                            // Maximum quantity value (adjust as needed)
-                                            const MAX_QUANTITY = 99;
-                                            
+
                                             minusBtn.addEventListener('click', function() {
                                                 let currentValue = parseInt(quantityDisplay.textContent);
                                                 if (currentValue > MIN_QUANTITY) {
@@ -281,20 +290,49 @@
                                                     quantityInput.value = currentValue;
                                                 }
                                             });
-                                            
+
                                             plusBtn.addEventListener('click', function() {
                                                 let currentValue = parseInt(quantityDisplay.textContent);
-                                                if (currentValue < MAX_QUANTITY) {
+                                                if (currentValue < maxQuantity) {
                                                     currentValue++;
                                                     quantityDisplay.textContent = currentValue;
                                                     quantityInput.value = currentValue;
+                                                } else {
+                                                    showNotification(`Only ${maxQuantity} items available in stock`, 'warning');
                                                 }
                                             });
+
+                                            function showNotification(message, type = 'warning') {
+                                                const notification = document.createElement('div');
+                                                notification.className = `notification ${type}`;
+                                                notification.textContent = message;
+
+                                                Object.assign(notification.style, {
+                                                    position: 'fixed',
+                                                    top: '20px',
+                                                    right: '20px',
+                                                    padding: '15px 25px',
+                                                    background: type === 'success' ? '#4CAF50' : '#f44336',
+                                                    color: 'white',
+                                                    borderRadius: '4px',
+                                                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                                                    zIndex: '1000'
+                                                });
+
+                                                document.body.appendChild(notification);
+
+                                                setTimeout(() => {
+                                                    notification.remove();
+                                                }, 3000);
+                                            }
                                         });
                                     </script>
                                 {% else %}
-                                    <p>You must be logged in to add items to your cart. <a href="{% url 'login' %}?next={{ request.path }}">Login here</a></p>
+                                    <p>You must be logged in to add items to your cart. 
+                                        <a href="{% url 'login' %}?next={{ request.path }}">Login here</a>
+                                    </p>
                                 {% endif %}
+
                             </div>
                             
                             <div class="details-action-group">

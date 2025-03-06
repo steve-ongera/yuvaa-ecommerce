@@ -36,17 +36,28 @@ def add_to_cart(request):
     size = request.POST.get('size')  # Get selected size
 
     if not size:
-            messages.error(request, "Please select a shoe size.")
-            return redirect(f'/products/{product.slug}')
+        messages.error(request, "Please select a shoe size.")
+        return redirect(f'/products/{product.slug}')
+    
+    # Check available quantity
+    if quantity > product.quantity:  # Using `quantity` instead of `stock`
+        messages.error(request, f"Only {product.quantity} items available in stock.")
+        return redirect(f'/products/{product.slug}')
     
     cart, created = Cart.objects.get_or_create(user=request.user, status='InProgress')
     
-    cart_detail, created = CartDetail.objects.get_or_create(cart=cart, product=product , size=size)
-    cart_detail.quantity = quantity
-    cart_detail.total = round(quantity * product.price, 2)
+    cart_detail, created = CartDetail.objects.get_or_create(cart=cart, product=product, size=size)
+    
+    # Ensure the total quantity in the cart does not exceed available quantity
+    new_quantity = cart_detail.quantity + quantity if not created else quantity
+    if new_quantity > product.quantity:
+        messages.error(request, f"Only {product.quantity} items available in stock.")
+        return redirect(f'/products/{product.slug}')
+    
+    cart_detail.quantity = new_quantity
+    cart_detail.total = round(new_quantity * product.price, 2)
     cart_detail.save()
     
-    # Add success message
     messages.success(request, f'{product.name} has been added to your cart!')
 
     return redirect(f'/products/{product.slug}')

@@ -88,6 +88,22 @@ class Order(models.Model):
                 if not Order.objects.filter(code=new_code).exists():
                     self.code = new_code
                     break  # Ensure the generated code is unique
+
+
+        # Calculate delivery dates
+        if not self.delivery_start_date or not self.delivery_end_date:
+            today = date.today()
+            start_date = today + timedelta(days=2)
+            if start_date.weekday() in [5, 6]:  # If Saturday or Sunday
+                start_date += timedelta(days=(7 - start_date.weekday()))  # Move to Monday
+            end_date = start_date + timedelta(days=1)
+            if end_date.weekday() in [5, 6]:  # If weekend, move to Monday
+                end_date += timedelta(days=(7 - end_date.weekday()))
+
+            self.delivery_start_date = start_date
+            self.delivery_end_date = end_date
+
+
         super(Order, self).save(*args, **kwargs)
     
     def __str__(self):
@@ -142,6 +158,17 @@ class Transaction(models.Model):
     def __str__(self):
         items_summary = self.get_order_items_display()
         return f"Transaction {self.transaction_id} - {self.user.username} ({items_summary})"
+    
+
+    @property
+    def delivery_dates(self):
+        """Fetch delivery start and end dates from the associated order."""
+        if self.order:
+            return {
+                "start_date": self.order.delivery_start_date or "Not Set",
+                "end_date": self.order.delivery_end_date or "Not Set"
+            }
+        return {"start_date": "N/A", "end_date": "N/A"}
 
 
     

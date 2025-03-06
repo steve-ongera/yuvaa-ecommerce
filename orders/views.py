@@ -341,6 +341,41 @@ def order_success(request):
     return render(request, 'orders/order_success.html')
 
 
+#e-commerce admin view 
+@login_required
+def transaction_list(request):
+    """View to display all transactions"""
+    # For staff/admin users, show all transactions
+    if request.user.is_staff:
+        transactions = Transaction.objects.all().order_by('-timestamp')
+    # For regular users, show only their transactions
+    else:
+        transactions = Transaction.objects.filter(user=request.user).order_by('-timestamp')
+    
+    context = {
+        'transactions': transactions,
+    }
+    return render(request, 'orders/transaction_list.html', context)
+
+@login_required
+def transaction_detail(request, transaction_id):
+    """View to display details of a specific transaction"""
+    if request.user.is_staff:
+        transaction = get_object_or_404(Transaction, transaction_id=transaction_id)
+    else:
+        transaction = get_object_or_404(Transaction, transaction_id=transaction_id, user=request.user)
+    
+    order = transaction.order  # Get the associated order
+    order_items = OrderDetail.objects.filter(order=order)  # Fix: Fetch order items correctly
+
+    context = {
+        'transaction': transaction,
+        'order': order,
+        'order_items': order_items,
+    }
+    return render(request, 'orders/transaction_detail.html', context)
+
+
 # def order_summary(request):
 #     # Retrieve the user's active cart
 #     cart = get_object_or_404(Cart, user=request.user, status="InProgress")

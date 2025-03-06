@@ -206,7 +206,7 @@
                                     <a class="navbar-link " href="/products/brands/">{% translate "Brands" %}</a>
                                 </li>
                                 <li class="navbar-item ">
-                                    <a class="navbar-link " href="/orders">{% translate "Orders" %}</a>
+                                    <a class="navbar-link " href="{% url 'orders:transaction_list'%}">{% translate "Orders" %}</a>
                                 </li>
                             </ul>
                             <div class="navbar-info-group">
@@ -328,12 +328,25 @@
                 <button class="nav-close"><i class="icofont-close"></i></button>
             </div>
             <div class="nav-content">
+                
                 <div class="nav-btn">
-                    <a href="{% url 'login'%}" class="btn btn-inline">
-                        <i class="fa fa-unlock-alt"></i>
-                        <span>Login</span>
-                    </a>
+                    {% if user.is_authenticated %}
+                        <form method="POST" class="btn btn-inline" action="{% url 'logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-inline" style="background: none; border: none; padding: 0; cursor: pointer;">
+                                <i class="fa fa-sign-out"></i>
+                                <span>Logout</span>
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-inline">
+                            <i class="fa fa-unlock-alt"></i>
+                            <span>Login</span>
+                        </a>
+                    {% endif %}
                 </div>
+                
+                
                 <!-- This commentable code show when user login or register -->
                 <!-- <div class="nav-profile">
                     <a class="nav-user" href="#"><img src="images/user.png" alt="user"></a>
@@ -391,7 +404,7 @@
                         </ul>
                     </li>
                     <li>
-                        <a class="nav-link " href="/orders"><i class="icofont-book-alt"></i>Orders</a>
+                        <a class="nav-link " href="{% url 'orders:transaction_list'%}"><i class="icofont-book-alt"></i>Orders</a>
                        
                     </li>
                     <li><a class="nav-link" href="#"><i class="icofont-sale-discount"></i>offers</a></li>

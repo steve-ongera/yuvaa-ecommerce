@@ -1,7 +1,7 @@
 <!-- templates/orders/order_success.html -->
 {% extends 'base.html' %}
 
-{% block content %}
+{% block body %}
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-8 text-center">
@@ -19,8 +19,8 @@
                     </div>
                     
                     <div class="mt-5">
-                        <a href="{% url 'orders:order_list' %}" class="btn btn-primary me-2">View My Orders</a>
-                        <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">Continue Shopping</a>
+                        <a href="/" class="btn btn-primary me-2">View My Orders</a>
+                        <a href="/" class="btn btn-outline-secondary">Continue Shopping</a>
                     </div>
                 </div>
             </div>

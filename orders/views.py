@@ -272,7 +272,7 @@ from .models import Order, Transaction, Cart, CartDetail, Product
 from decimal import Decimal
 
 @login_required
-def pay_view(request):
+def backup_pay_view(request):
     user = request.user
 
     # Retrieve the user's active cart
@@ -384,7 +384,7 @@ def mpesa_stk_callback(request):
     """
     if request.method == 'POST':
         try:
-            # Parse the JSON response from M-Pesa
+            # Parse the JSON response from M-Pesa 
             mpesa_response = json.loads(request.body)
             
             # Get the response data
@@ -573,7 +573,8 @@ from .models import Cart, Order, Transaction
 from .mpesa import initiate_stk_push  # Ensure this function is properly implemented
 
 @login_required
-def updated_pay_view(request):
+@login_required
+def pay_view(request):
     user = request.user
 
     # Retrieve the user's active cart
@@ -587,20 +588,20 @@ def updated_pay_view(request):
         product = item.product
         if product.quantity < item.quantity:
             messages.error(request, f"Not enough stock for {product.name}. Available: {product.quantity}")
-            return redirect('orders:checkout')  # Redirect user to cart page
+            return redirect('orders:checkout')
 
     # Get or create an order associated with the cart
     order, created = Order.objects.get_or_create(
         user=user, 
         status='pending',
         defaults={
-            'code': f"ORD{user.id}{cart.id}",  # Generate a unique order code
+            'code': f"ORD{user.id}{cart.id}",  
             'total_After_coupon': cart.total_After_coupon or cart.cart_total(),
-            'total_price': cart.total_After_coupon or cart.cart_total(),  # Ensure total_price is updated
+            'total_price': cart.total_After_coupon or cart.cart_total(),  
         }
     )
 
-    # Fetch delivery fee (If not set, default to 0)
+    # Fetch delivery fee
     delivery_fee = order.delivery_fee if order.delivery_fee else Decimal('0.00')
 
     # Calculate total prices
@@ -619,13 +620,13 @@ def updated_pay_view(request):
             messages.error(request, "All fields are required.")
             return redirect('orders:pay')
 
-        # Generate a unique reference for this transaction (Use Order.code)
-        account_reference = order.code
-        
-        # Define the callback URL
-        callback_url = request.build_absolute_uri('/mpesa/stk-callback/')
+        # Check if an existing pending transaction exists for this order
+        existing_transaction = Transaction.objects.filter(order=order, status="pending").first()
+        if existing_transaction:
+            messages.warning(request, "A payment is already in progress. Please complete it before retrying.")
+            return redirect('orders:payment_waiting', transaction_id=existing_transaction.id)
 
-        # Create a pending transaction 
+        # Create a new pending transaction
         transaction = Transaction.objects.create(
             user=user,
             order=order,
@@ -633,23 +634,24 @@ def updated_pay_view(request):
             id_number=id_number,
             phone_number=phone_number,
             amount=final_total,
-            status="pending",  # Mark as pending until callback confirms payment
+            status="pending",
             pickup_station=order.pickup_station
         )
-        
+
         # Initiate STK Push with Paybill
+        callback_url = request.build_absolute_uri('/mpesa/stk-callback/')
         response = initiate_stk_push(
             phone_number=phone_number,
             amount=final_total,
-            account_reference=account_reference,
+            account_reference=order.code,  
             callback_url=callback_url
         )
-        
+
         # Store the checkout request ID for callback matching
         if response and 'CheckoutRequestID' in response:
             transaction.checkout_request_id = response['CheckoutRequestID']
             transaction.save()
-            
+
             messages.success(request, "Payment initiated. Please check your phone to complete the transaction.")
             return redirect('orders:payment_waiting', transaction_id=transaction.id)
         else:
@@ -674,6 +676,7 @@ def updated_pay_view(request):
 
 
 
+
 # 5. Add a payment waiting view
 @login_required
 def payment_waiting(request, transaction_id):
@@ -691,7 +694,7 @@ def payment_waiting(request, transaction_id):
         "transaction": transaction,
     }
     
-    return render(request, "orders/payment_waiting.html", context)
+    return render(request, "orders/new_mpesa_integration/payment_waiting.html", context)
 
 from django.http import JsonResponse
 

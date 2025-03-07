@@ -1,7 +1,7 @@
 <!-- templates/orders/payment_waiting.html -->
 {% extends 'base.html' %}
 
-{% block content %}
+{% block body %}
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
@@ -26,7 +26,7 @@
                     <div id="status-message"></div>
                     
                     <div class="mt-4">
-                        <a href="{% url 'orders:pay' %}" class="btn btn-outline-secondary">Cancel Payment</a>
+                        <a href="/" class="btn btn-outline-secondary">Cancel Payment</a>
                     </div>
                 </div>
             </div>

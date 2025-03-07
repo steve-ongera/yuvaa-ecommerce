@@ -119,6 +119,7 @@ class OrderDetail(models.Model):
     price = models.FloatField()
     quantity = models.IntegerField()
     total = models.FloatField(null=True, blank=True)  # Ensure this field exists and is calculated
+    size = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         return str(self.order)

@@ -117,7 +117,8 @@ def checkout(request):
                 product=cart_item.product,
                 quantity=cart_item.quantity,
                 price=cart_item.product.price,  # Store price at the time of order
-                total=cart_item.product.price * cart_item.quantity  # Calculate total price per item
+                total=cart_item.product.price * cart_item.quantity , # Calculate total price per item
+                 size=cart_item.size
             )
 
         # Calculate delivery date (3-2 days after order but not on weekends)

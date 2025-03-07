@@ -88,7 +88,7 @@
                                 <th>Quantity</th>
                                 <th>Subtotal</th>
                                 <th>Vendor</th>
-                                <th>Delivery Window</th>
+                                <th>size</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -109,11 +109,7 @@
                                 <td>KES {{ item.get_total }}</td>
                                 <td>{{ item.vendor.name|default:"N/A" }}</td>
                                 <td>
-                                    {% if item.delivery_date_start and item.delivery_date_end %}
-                                    {{ item.delivery_date_start|date:"M d" }} - {{ item.delivery_date_end|date:"M d" }}
-                                    {% else %}
-                                    Not specified
-                                    {% endif %}
+                                    {{ item.size}}
                                 </td>
                             </tr>
                             {% endfor %}

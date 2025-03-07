@@ -140,6 +140,11 @@ class Transaction(models.Model):
     pickup_station = models.ForeignKey(PickupStation, on_delete=models.SET_NULL, null=True, blank=True)
     transaction_id = models.CharField(max_length=20, unique=True, blank=True, null=True)  # Match Order's code field
 
+
+    # Added fields for M-Pesa integration
+    checkout_request_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    mpesa_receipt_number = models.CharField(max_length=50, blank=True, null=True)
+
     def save(self, *args, **kwargs):
         """ Ensure transaction_id is set to the order's code when saving """
         if not self.transaction_id and self.order:

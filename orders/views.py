@@ -459,16 +459,13 @@ def mpesa_validation(request):
             mpesa_data = json.loads(request.body)
             account_number = mpesa_data.get('BillRefNumber')
             
-            # Check if this is a valid order reference
-            # Example: account_number could be 'Order-123'
-            if account_number and account_number.startswith('Order-'):
-                order_id = account_number.split('-')[1]
-                if Order.objects.filter(id=order_id, status='pending').exists():
-                    # Valid order, accept the payment
-                    return JsonResponse({
-                        "ResultCode": 0,
-                        "ResultDesc": "Accepted"
-                    })
+            # Check if the order code exists and is still pending
+            if account_number and Order.objects.filter(code=account_number, payment_status='pending').exists():
+                # Valid order, accept the payment
+                return JsonResponse({
+                    "ResultCode": 0,
+                    "ResultDesc": "Accepted"
+                })
             
             # Invalid account/order, reject the payment
             return JsonResponse({
@@ -486,6 +483,8 @@ def mpesa_validation(request):
     
     return HttpResponse(status=400)
 
+
+
 @csrf_exempt
 def mpesa_confirmation(request):
     """
@@ -500,42 +499,41 @@ def mpesa_confirmation(request):
             transaction_id = mpesa_data.get('TransID')
             transaction_time = mpesa_data.get('TransTime')
             amount = mpesa_data.get('TransAmount')
-            account_number = mpesa_data.get('BillRefNumber')  # This should be your order reference
+            account_number = mpesa_data.get('BillRefNumber')  # Should match order `code`
             phone_number = mpesa_data.get('MSISDN')
             
-            # Find the order
-            if account_number and account_number.startswith('Order-'):
-                order_id = account_number.split('-')[1]
+            # Find the order using `code` instead of `id`
+            try:
+                order = Order.objects.get(code=account_number, payment_status='pending')
+                
+                # Create or update transaction
+                transaction, created = Transaction.objects.get_or_create(
+                    order=order,
+                    defaults={
+                        'user': order.user,
+                        'name': order.user.get_full_name() or 'Customer',
+                        'phone_number': phone_number,
+                        'amount': amount,
+                        'status': 'completed',
+                        'mpesa_receipt_number': transaction_id,
+                    }
+                )
+                
+                if not created:
+                    transaction.status = 'completed'
+                    transaction.mpesa_receipt_number = transaction_id
+                    transaction.save()
+                
+                # Update order payment status
+                order.payment_status = 'completed'
+                order.mpesa_receipt_number = transaction_id
+                order.payment_phone = phone_number
+                order.save()
+                
+                # Update product quantities and cart status
                 try:
-                    order = Order.objects.get(id=order_id)
-                    
-                    # Create or update transaction
-                    transaction, created = Transaction.objects.get_or_create(
-                        order=order,
-                        defaults={
-                            'user': order.user,
-                            'name': order.user.get_full_name() or 'Customer',
-                            'phone_number': phone_number,
-                            'amount': amount,
-                            'status': 'completed',
-                            'mpesa_receipt_number': transaction_id,
-                        }
-                    )
-                    
-                    if not created:
-                        transaction.status = 'completed'
-                        transaction.mpesa_receipt_number = transaction_id
-                        transaction.save()
-                    
-                    # Update order status
-                    order.status = 'completed'
-                    order.save()
-                    
-                    # Update product quantities and cart status
                     cart = Cart.objects.get(user=order.user, status="InProgress")
-                    cart_details = cart.cart_detail.all()
-                    
-                    for item in cart_details:
+                    for item in cart.cart_detail.all():
                         product = item.product
                         product.quantity -= item.quantity
                         product.save()
@@ -544,11 +542,12 @@ def mpesa_confirmation(request):
                     cart.cart_detail.all().delete()
                     cart.status = "Completed"
                     cart.save()
-                    
-                except Order.DoesNotExist:
-                    # Log that we received payment for non-existent order
-                    print(f"Payment received for non-existent order: {account_number}")
-            
+                except Cart.DoesNotExist:
+                    print(f"No active cart found for user {order.user}")
+
+            except Order.DoesNotExist:
+                print(f"Payment received for non-existent order: {account_number}")
+
             # Always return success to M-Pesa
             return JsonResponse({
                 "ResultCode": 0,
@@ -565,9 +564,13 @@ def mpesa_confirmation(request):
     
     return HttpResponse(status=400)
 
-
-
-# 5. Update the pay_view to use STK Push with Paybill
+import json
+from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Cart, Order, Transaction
+from .mpesa import initiate_stk_push  # Ensure this function is properly implemented
 
 @login_required
 def updated_pay_view(request):
@@ -591,13 +594,14 @@ def updated_pay_view(request):
         user=user, 
         status='pending',
         defaults={
+            'code': f"ORD{user.id}{cart.id}",  # Generate a unique order code
             'total_After_coupon': cart.total_After_coupon or cart.cart_total(),
             'total_price': cart.total_After_coupon or cart.cart_total(),  # Ensure total_price is updated
         }
     )
 
     # Fetch delivery fee (If not set, default to 0)
-    delivery_fee = order.delivery_fee if order.delivery_fee else 0.00
+    delivery_fee = order.delivery_fee if order.delivery_fee else Decimal('0.00')
 
     # Calculate total prices
     total_before_coupon = cart.cart_total()
@@ -613,7 +617,13 @@ def updated_pay_view(request):
 
         if not all([name, id_number, phone_number]):
             messages.error(request, "All fields are required.")
-            return redirect('pay')
+            return redirect('orders:pay')
+
+        # Generate a unique reference for this transaction (Use Order.code)
+        account_reference = order.code
+        
+        # Define the callback URL
+        callback_url = request.build_absolute_uri('/mpesa/stk-callback/')
 
         # Create a pending transaction 
         transaction = Transaction.objects.create(
@@ -627,34 +637,25 @@ def updated_pay_view(request):
             pickup_station=order.pickup_station
         )
         
-        # Generate a unique reference for this transaction
-        # For Paybill, this appears as the "Account Number" in M-Pesa
-        account_reference = f"Order-{order.id}"
-        
-        # Set your callback URL - must be accessible from the internet
-        # For development, use a tool like ngrok to create a tunnel
-        callback_url = request.build_absolute_uri('/mpesa/stk-callback/')
-        
-        # Initiate the STK Push with Paybill
+        # Initiate STK Push with Paybill
         response = initiate_stk_push(
             phone_number=phone_number,
             amount=final_total,
-            order_id=order.id,
             account_reference=account_reference,
             callback_url=callback_url
         )
         
         # Store the checkout request ID for callback matching
-        if 'CheckoutRequestID' in response:
+        if response and 'CheckoutRequestID' in response:
             transaction.checkout_request_id = response['CheckoutRequestID']
             transaction.save()
             
             messages.success(request, "Payment initiated. Please check your phone to complete the transaction.")
-            # Redirect to a payment waiting page
             return redirect('orders:payment_waiting', transaction_id=transaction.id)
         else:
             # Handle errors from M-Pesa
-            messages.error(request, f"Failed to initiate payment: {response.get('errorMessage', 'Unknown error')}")
+            error_message = response.get('errorMessage', 'Unknown error') if response else "No response from M-Pesa"
+            messages.error(request, f"Failed to initiate payment: {error_message}")
             transaction.delete()  # Remove the failed transaction
             return redirect('orders:pay')
 

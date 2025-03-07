@@ -645,7 +645,8 @@ def pay_view(request):
             phone_number=phone_number,
             amount=final_total,
             account_reference=order.code,  
-            callback_url=callback_url
+            callback_url=callback_url,
+            order_id=order.id  # Add this argument
         )
 
         # Store the checkout request ID for callback matching

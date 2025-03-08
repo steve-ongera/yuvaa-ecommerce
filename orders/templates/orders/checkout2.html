@@ -404,7 +404,7 @@
                             <div class="product-item">
                                 <img src="{{item.product.image.url}}" alt="{{ item.product.name }}">
                                 <div class="product-details">
-                                    <p class="product-name">{{ item.product.name }}</p>
+                                    <p class="product-name">{{ item.product.name }} ( size {{item.size}} )</p>
                                     <p class="product-qty">QTY: {{item.quantity}}</p>
                                     {% if shipment.profile_picture %}
                                        <img src="{{ shipment.profile_picture.url }}" alt="{{ shipment.fulfilled_by }}" class="vendor-logo">

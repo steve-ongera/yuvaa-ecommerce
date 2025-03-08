@@ -119,15 +119,13 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+
 
 
 
@@ -197,20 +195,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 LOCALE_PATHS = ['locale']
 
 LANGUAGES = [
-    #("ar", ("Arabic")),
     ("en", ("English")),
 ]
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-#         "LOCATION": "redis://myredis:6379/0",
-#     }
-# }
-
-# # #celery
-# # CELERY_BROKER_URL = 'redis://localhost:6379/0'
-# # CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # settings.py
 CELERY_BROKER_URL = 'redis://myredis:6379/0'

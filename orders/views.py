@@ -63,6 +63,47 @@ def add_to_cart(request):
     return redirect(f'/products/{product.slug}')
 
 
+def update_cart(request, item_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            new_quantity = int(data.get('quantity'))
+            
+            # Get the cart detail item
+            cart_detail = get_object_or_404(CartDetail, id=item_id)
+            
+            # Check if we have enough stock
+            if new_quantity > cart_detail.product.quantity:
+                return JsonResponse({
+                    'success': False, 
+                    'message': f'Only {cart_detail.product.quantity} items available in stock.'
+                }, status=400)
+            
+            # Update the quantity and recalculate total
+            cart_detail.quantity = new_quantity
+            cart_detail.total = round(new_quantity * cart_detail.product.price, 2)
+            cart_detail.save()
+            
+            # Calculate the new cart total
+            cart = cart_detail.cart
+            from django.db.models import Sum
+            cart_total = CartDetail.objects.filter(cart=cart).aggregate(
+                cart_total=Sum('total')
+            )['cart_total'] or 0
+            
+            # Return updated cart information
+            return JsonResponse({
+                'success': True, 
+                'message': 'Cart updated',
+                'new_quantity': new_quantity,
+                'new_total': cart_detail.total,
+                'cart_total': round(cart_total, 2)
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+
 
 def remove_from_cart(request,id):
     cart_detail = CartDetail.objects.get(id=id)

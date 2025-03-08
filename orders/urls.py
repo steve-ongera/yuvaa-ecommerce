@@ -11,6 +11,7 @@ urlpatterns = [
     path('', OrderList.as_view()),
     path('checkout', checkout , name="checkout" ),
     path('add_to_cart', add_to_cart ,name ='add_to_cart'),
+    path('update-cart/<int:item_id>/', views.update_cart, name='update-cart'),
     path('<int:id>/remove-from-cart',remove_from_cart),
     path('update-pickup-station/', update_pickup_station, name='update_pickup_station'),
     #path('order-summary/', order_summary, name='order_summary'),

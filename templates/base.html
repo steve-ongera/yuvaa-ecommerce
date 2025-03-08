@@ -297,27 +297,220 @@
 
                 {% for item in cart_detail_data %}
                     <li class="cart-item">
-                    <div class="cart-media">
-                        <a href="#"><img src="{{item.product.image.url}}" alt="product"></a>
-                        <a class="cart-delete" href='/orders/{{item.id}}/remove-from-cart'><i class="far fa-trash-alt"></i></a>
-                    </div>
-                    <div class="cart-info-group">
-                        <div class="cart-info">
-                            <h6><a href="product-single.html">{{item.product}}</a></h6>
-                            <p>Unit Price - ksh{{item.product.price}}</p>
-                            <p style="font-size: 14px">size no. {{item.size}}</p>
+                        <div class="cart-media">
+                            <a href="{% url 'product:product-detail' item.product.slug %}">
+                                <img src="{{ item.product.image.url }}" alt="product">
+                            </a>
+                            <a class="cart-delete" href='/orders/{{ item.id }}/remove-from-cart'>
+                                <i class="far fa-trash-alt"></i>
+                            </a>
                         </div>
-                        <div class="cart-action-group">
-                            <div class="product-action">
-                                <button class="action-minus" title="Quantity Minus"><i class="icofont-minus"></i></button>
-                                <input class="action-input" title="Quantity Number" type="text" name="quantity" value={{item.quantity}}>
-                                <button class="action-plus" title="Quantity Plus"><i class="icofont-plus"></i></button>
+                        <div class="cart-info-group">
+                            <div class="cart-info">
+                                <h6>
+                                    <a href="{% url 'product:product-detail' item.product.slug %}">{{ item.product }}</a>
+                                </h6>
+                                <p>Unit Price - Ksh {{ item.product.price }}</p>
+                                <p style="font-size: 14px">Size no. {{ item.size }}</p>
                             </div>
-                            <h6>{{item.total}}</h6>
+                            <div class="cart-action-group">
+                                <div class="product-action">
+                                    <button class="action-minus" title="Quantity Minus"><i class="icofont-minus"></i></button>
+                                    <input class="action-input" title="Quantity Number" type="text" name="quantity" 
+                                        value="{{ item.quantity }}" 
+                                        data-quantity="{{ item.product.quantity }}" 
+                                        data-item-id="{{ item.id }}"
+                                        readonly>
+                                    <button class="action-plus" title="Quantity Plus"><i class="icofont-plus"></i></button>
+                                </div>
+                                <h6>{{ item.total }}</h6>
+                            </div>
                         </div>
-                    </div>
-                    </li> 
+                    </li>
                 {% endfor %}
+
+              <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Check if we've already initialized to prevent multiple handlers
+                    if (window.cartInitialized) {
+                        console.log("Cart already initialized, preventing duplicate initialization");
+                        return;
+                    }
+                    
+                    // Mark as initialized
+                    window.cartInitialized = true;
+                    
+                    console.log("Initializing cart functionality...");
+                    
+                    document.querySelectorAll('.cart-item').forEach((cartItem, index) => {
+                        console.log(`Setting up cart item ${index + 1}`);
+                        
+                        const minusBtn = cartItem.querySelector('.action-minus');
+                        const plusBtn = cartItem.querySelector('.action-plus');
+                        const quantityInput = cartItem.querySelector('.action-input');
+                
+                        // Log initial values to help debug
+                        let maxQuantity = parseInt(quantityInput.dataset.quantity);
+                        let itemId = quantityInput.dataset.itemId;
+                        console.log(`Item ID: ${itemId}, Max Quantity: ${maxQuantity}, Current: ${quantityInput.value}`);
+                
+                        const MIN_QUANTITY = 1;
+                
+                        function updateButtonState() {
+                            let currentValue = parseInt(quantityInput.value);
+                            plusBtn.disabled = currentValue >= maxQuantity;
+                            minusBtn.disabled = currentValue <= MIN_QUANTITY;
+                        }
+                
+                        // Remove any existing event listeners (if possible)
+                        const newMinusBtn = minusBtn.cloneNode(true);
+                        const newPlusBtn = plusBtn.cloneNode(true);
+                        minusBtn.parentNode.replaceChild(newMinusBtn, minusBtn);
+                        plusBtn.parentNode.replaceChild(newPlusBtn, plusBtn);
+                        
+                        // Re-assign variables to the new elements
+                        const updatedMinusBtn = cartItem.querySelector('.action-minus');
+                        const updatedPlusBtn = cartItem.querySelector('.action-plus');
+                
+                        // Handle minus button click with a clear log
+                        updatedMinusBtn.addEventListener('click', function (event) {
+                            event.preventDefault();
+                            console.log(`Minus clicked for item ${itemId}`);
+                            
+                            let currentValue = parseInt(quantityInput.value);
+                            console.log(`Current value before minus: ${currentValue}`);
+                            
+                            if (currentValue > MIN_QUANTITY) {
+                                // Disable buttons during update to prevent double-clicks
+                                updatedMinusBtn.disabled = true;
+                                updatedPlusBtn.disabled = true;
+                                
+                                updateCart(itemId, currentValue - 1);
+                            }
+                        });
+                
+                        // Handle plus button click with a clear log
+                        updatedPlusBtn.addEventListener('click', function (event) {
+                            event.preventDefault();
+                            console.log(`Plus clicked for item ${itemId}`);
+                            
+                            let currentValue = parseInt(quantityInput.value);
+                            console.log(`Current value before plus: ${currentValue}`);
+                            
+                            if (currentValue < maxQuantity) {
+                                // Disable buttons during update to prevent double-clicks
+                                updatedMinusBtn.disabled = true;
+                                updatedPlusBtn.disabled = true;
+                                
+                                updateCart(itemId, currentValue + 1);
+                            } 
+                            if (currentValue + 1 >= maxQuantity) {
+                                showNotification(`Only ${maxQuantity} items available in stock`, 'warning');
+                            }
+                        });
+                
+                        function showNotification(message, type = 'warning') {
+                            console.log(`Showing notification: ${message}`);
+                            
+                            const notification = document.createElement('div');
+                            notification.className = `notification ${type}`;
+                            notification.textContent = message;
+                
+                            Object.assign(notification.style, {
+                                position: 'fixed',
+                                top: '20px',
+                                right: '20px',
+                                padding: '10px 20px',
+                                background: type === 'success' ? '#4CAF50' : '#f44336',
+                                color: 'white',
+                                borderRadius: '4px',
+                                boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                                zIndex: '1000'
+                            });
+                
+                            document.body.appendChild(notification);
+                
+                            setTimeout(() => {
+                                notification.remove();
+                            }, 3000);
+                        }
+                
+                        function updateCart(itemId, newQuantity) {
+                            console.log(`Updating cart for item ${itemId}, new quantity: ${newQuantity}`);
+                            
+                            fetch(`/orders/update-cart/${itemId}/`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCSRFToken()
+                                },
+                                body: JSON.stringify({ quantity: newQuantity })
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`Server responded with ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log("Server response:", data);
+                                
+                                if (data.success) {
+                                    // Update the quantity input with server-confirmed value
+                                    quantityInput.value = data.new_quantity;
+                                    console.log(`Updated quantity to: ${data.new_quantity}`);
+                                    
+                                    // Update the item total price
+                                    const totalElement = cartItem.querySelector('.cart-action-group h6');
+                                    if (totalElement) {
+                                        totalElement.textContent = data.new_total;
+                                        console.log(`Updated item total to: ${data.new_total}`);
+                                    }
+                                    
+                                    // Update the cart total in the footer
+                                    const checkoutPrice = document.querySelector('.checkout-price');
+                                    if (checkoutPrice && data.cart_total) {
+                                        checkoutPrice.textContent = `ksh ${parseFloat(data.cart_total).toFixed(2)}`;
+                                        console.log(`Updated cart total to: ${data.cart_total}`);
+                                    }
+                                    
+                                    showNotification('Cart updated successfully', 'success');
+                                } else {
+                                    showNotification(data.message || 'Error updating cart', 'warning');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                showNotification('Failed to update cart. Please try again.', 'error');
+                            })
+                            .finally(() => {
+                                // Re-enable buttons and update their state
+                                updatedMinusBtn.disabled = false;
+                                updatedPlusBtn.disabled = false;
+                                updateButtonState();
+                                console.log("Update completed, buttons re-enabled");
+                            });
+                        }
+                
+                        function getCSRFToken() {
+                            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+                            if (!csrfInput) {
+                                console.error('CSRF token not found');
+                                return '';
+                            }
+                            return csrfInput.value;
+                        }
+                
+                        // Initial button state
+                        updateButtonState();
+                    });
+                    
+                    console.log("Cart initialization complete");
+                });
+            </script>
+                
+                
+
 
 
             </ul>
@@ -596,93 +789,7 @@
             </div> 
         </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Get all product view buttons
-                const productViewButtons = document.querySelectorAll('.product-widget .fas.fa-eye');
-                
-                productViewButtons.forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        
-                        // Get the parent product card
-                        const productCard = this.closest('.product-card');
-                        
-                        // Get product details
-                        const productName = productCard.querySelector('.product-name a').textContent.trim();
-                        const productPrice = productCard.querySelector('.product-price span').textContent.trim();
-                        const productImage = productCard.querySelector('.product-image img').src;
-                        const productFlag = productCard.querySelector('.product-label .label-text').textContent.trim();
-                        const productRating = productCard.querySelector('.product-rating').innerHTML;
-                        
-                        // Update modal content
-                        const modal = document.getElementById('product-view');
-                        
-                        // Update product name
-                        modal.querySelector('.view-name a').textContent = productName;
-                        
-                        // Update price
-                        modal.querySelector('.view-price span').textContent = productPrice;
-                        
-                        // Update images in both preview and thumb sliders
-                        const previewSlider = modal.querySelectorAll('.preview-slider li img');
-                        const thumbSlider = modal.querySelectorAll('.thumb-slider li img');
-                        
-                        previewSlider.forEach(img => {
-                            img.src = productImage;
-                            img.alt = productName;
-                        });
-                        
-                        thumbSlider.forEach(img => {
-                            img.src = productImage;
-                            img.alt = productName;
-                        });
-                        
-                        // Update product labels
-                        const viewLabelGroup = modal.querySelector('.view-label-group');
-                        viewLabelGroup.innerHTML = `<label class="view-label new">${productFlag}</label>`;
-                        
-                        // Update rating
-                        const viewRating = modal.querySelector('.view-rating');
-                        viewRating.innerHTML = productRating;
-                        
-                        // Set up quantity buttons
-                        setupQuantityButtons(modal);
-                        
-                        // Set up wishlist button
-                        setupWishlistButton(modal);
-                    });
-                });
-                
-                // Function to handle quantity buttons
-                function setupQuantityButtons(modal) {
-                    const quantityInput = modal.querySelector('.action-input');
-                    const minusButton = modal.querySelector('.action-minus');
-                    const plusButton = modal.querySelector('.action-plus');
-                    
-                    minusButton.addEventListener('click', () => {
-                        let value = parseInt(quantityInput.value);
-                        if (value > 1) {
-                            quantityInput.value = value - 1;
-                        }
-                    });
-                    
-                    plusButton.addEventListener('click', () => {
-                        let value = parseInt(quantityInput.value);
-                        quantityInput.value = value + 1;
-                    });
-                }
-                
-                // Function to handle wishlist button
-                function setupWishlistButton(modal) {
-                    const wishButton = modal.querySelector('.view-wish');
-                    wishButton.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        wishButton.classList.toggle('wished');
-                    });
-                }
-            });
-        </script>
+        
         <!--=====================================
                     PRODUCT VIEW END
         =======================================-->

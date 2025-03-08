@@ -1,0 +1,32 @@
+#flash-message-container {
+    position: fixed;
+    top: 20px;
+    right: -300px; /* Initially off-screen */
+    z-index: 1000;
+}
+
+.flash-message {
+    background-color: #4CAF50; /* Green for success */
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    transition: right 0.5s ease-in-out;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Error messages */
+.flash-message.error {
+    background-color: #f44336;
+}
+
+/* Warning messages */
+.flash-message.warning {
+    background-color: #ff9800;
+}
+
+/* Info messages */
+.flash-message.info {
+    background-color: #2196F3;
+}

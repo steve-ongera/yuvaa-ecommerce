@@ -1,0 +1,172 @@
+
+/* Shipment Styling */
+.shipment-container {
+    margin: 20px 0;
+}
+
+.shipment-section {
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+.shipment-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.fulfillment-info {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.shipment-details {
+    padding: 15px;
+}
+
+.pickup-info h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+/* Product Item */
+.product-item {
+    display: flex;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.product-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-right: 15px;
+}
+
+.product-details {
+    flex-grow: 1;
+}
+
+.product-name {
+    margin: 0 0 5px;
+    font-weight: bold;
+}
+
+.product-qty {
+    margin: 0 0 5px;
+    color: #666;
+}
+
+.vendor-logo {
+    max-height: 20px;
+    margin-top: 5px;
+}
+
+/* Confirmation Button */
+.confirm-button-container {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.confirm-delivery-btn {
+    background-color: #8A2BE2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Order Summary */
+.order-summary h3 {
+    margin-top: 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin: 15px 0;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.total-price {
+    font-size: 1.2em;
+}
+
+/* Voucher Info */
+.voucher-info {
+    display: flex;
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 15px 0;
+    font-size: 0.9em;
+}
+
+.info-icon {
+    margin-right: 10px;
+}
+
+/* Confirm Order Button */
+.confirm-order-btn {
+    width: 100%;
+    background-color: #757575;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.completion-note {
+    text-align: center;
+    font-size: 0.8em;
+    color: #757575;
+    margin-bottom: 15px;
+}
+
+/* Terms Note */
+.terms-note {
+    font-size: 0.9em;
+    color: #666;
+    line-height: 1.4;
+}
+
+.terms-note a {
+    color: #8A2BE2;
+    text-decoration: none;
+}
+
+/* Back Link */
+.back-link {
+    margin: 20px auto;
+    max-width: 1200px;
+}
+
+.back-link a {
+    color: #8A2BE2;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.back-icon {
+    margin-right: 5px;
+}

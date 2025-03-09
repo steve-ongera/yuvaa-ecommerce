@@ -7,6 +7,7 @@ from django.contrib.auth import logout
 from django.views import View
 from django.contrib import messages
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 
 
 def signup(request):
@@ -82,14 +83,14 @@ def activate(request, username):
     return render(request, 'registration/activate.html', {'form': form})
 
 
-
+@login_required
 def view_profile(request):
     # Get the profile of the logged-in user
     profile = Profile.objects.get(user=request.user)
     
     return render(request, 'registration/view_profile.html', {'profile': profile})
 
-
+@login_required
 def update_profile(request):
     profile = Profile.objects.get(user=request.user)
     user = request.user  # Get the User object

@@ -2,61 +2,81 @@
 
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <!--=====================================
-                    META TAG PART START
-        =======================================-->
-        <!-- REQUIRE META -->
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <!-- AUTHOR META -->
-        <meta name="author" content="mironcoder">
-        <meta name="email" content="mironcoder@gmail.com">
-        <meta name="profile" content="https://themeforest.net/user/mironcoder">
+<head>
+    <!--=====================================
+                META TAG PART START
+    =======================================-->
+    <!-- REQUIRED META -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <!-- TEMPLATE META -->
-        <meta name="name" content="Greeny">
-        <meta name="title" content="Greeny - eCommerce HTML Template">
-        <meta name="keywords" content="organic, food, shop, ecommerce, store, html, bootstrap, template, agriculture, vegetables, webshop, farm, grocery, natural, online store">
-        <!--=====================================
-                    META-TAG PART END
-        =======================================-->
+    <!-- AUTHOR META -->
+    <meta name="author" content="Yuvaa Fashona">
+    <meta name="email" content="contact@yuvaafashona.com">
+    <meta name="profile" content="https://www.yuvaafashona.com">
 
-        <!-- WEBPAGE TITLE -->
-        <title>{% block title %} Yuvaa {% endblock %}</title>
-        <link rel="icon" href="{% static 'en/images/yuva_logo.png'%}">
+    <!-- TEMPLATE META -->
+    <meta name="name" content="Yuvaa Fashona">
+    <meta name="title" content="Yuvaa Fashona - Trendy Fashion & Accessories Online">
+    <meta name="keywords" content="Yuvaa Fashona, fashion, online shopping, trendy clothing, shoes, accessories, affordable fashion, stylish outfits, shop clothing, trendy shoes, latest fashion">
+    <meta name="description" content="Shop the latest fashion trends online at Yuvaa Fashona. Discover stylish clothes, shoes, accessories, and more at unbeatable prices.">
 
+    <!-- OPEN GRAPH META TAGS (For Social Sharing) -->
+    <meta property="og:title" content="Yuvaa Fashona - Trendy Fashion & Accessories Online">
+    <meta property="og:description" content="Discover the latest fashion trends at Yuvaa Fashona. Shop stylish clothing, shoes, and accessories at affordable prices.">
+    <meta property="og:image" content="{% static 'en/images/yuvaa_fashona_logo.png' %}">
+    <meta property="og:url" content="https://www.yuvaafashona.com">
+    <meta property="og:type" content="website">
 
-        <!--=====================================
-                    CSS LINK PART START
-        =======================================-->
-        <!-- FAVICON -->
-        <link rel="icon" href="images/favicon.png">
+    <!-- TWITTER CARD META TAGS -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Yuvaa Fashona - Trendy Fashion & Accessories Online">
+    <meta name="twitter:description" content="Shop the latest fashion trends and stylish clothing, shoes, and accessories online at Yuvaa Fashona.">
+    <meta name="twitter:image" content="{% static 'en/images/yuvaa_fashona_logo.png' %}">
+    <meta name="twitter:url" content="https://www.yuvaafashona.com">
 
-        <!-- FONTS -->
-        <link rel="stylesheet" href="{% static 'en/fonts/flaticon/flaticon.css' %}">
-        <link rel="stylesheet" href="{% static 'en/fonts/icofont/icofont.min.css' %}">
-        <link rel="stylesheet" href="{% static 'en/fonts/fontawesome/fontawesome.min.css' %}">
+    <!--=====================================
+                META TAG PART END
+    =======================================-->
 
-        <!-- VENDOR -->
-        <link rel="stylesheet" href="{% static 'en/vendor/venobox/venobox.min.css' %}">
-        <link rel="stylesheet" href="{% static 'en/vendor/slickslider/slick.min.css' %}">
-        <link rel="stylesheet" href="{% static 'en/vendor/niceselect/nice-select.min.css' %}">
-        <link rel="stylesheet" href="{% static 'en/vendor/bootstrap/bootstrap.min.css' %}">
+    <!-- WEBPAGE TITLE -->
+    <title>{% block title %} Yuvaa Fashona {% endblock %}</title>
+    <link rel="icon" href="{% static 'en/images/yuva_logo.png' %}">
 
-        <!-- CUSTOM -->
-        <link rel="stylesheet" href="{% static 'en/css/main.css' %}">
-        <link rel="stylesheet" href="{% static 'en/css/user-auth.css' %}">
-        <!--=====================================
-                    CSS LINK PART END
-        =======================================-->
-    </head>
-    <body>
-        <!--=====================================
-                    USER FORM PART START
-        =======================================-->
-{% block body %}
+    <!--=====================================
+                CSS LINK PART START
+    =======================================-->
+    <!-- FAVICON -->
+    <link rel="icon" href="{% static 'images/favicon.png' %}">
+
+    <!-- FONTS -->
+    <link rel="stylesheet" href="{% static 'en/fonts/flaticon/flaticon.css' %}">
+    <link rel="stylesheet" href="{% static 'en/fonts/icofont/icofont.min.css' %}">
+    <link rel="stylesheet" href="{% static 'en/fonts/fontawesome/fontawesome.min.css' %}">
+
+    <!-- VENDOR CSS -->
+    <link rel="stylesheet" href="{% static 'en/vendor/venobox/venobox.min.css' %}">
+    <link rel="stylesheet" href="{% static 'en/vendor/slickslider/slick.min.css' %}">
+    <link rel="stylesheet" href="{% static 'en/vendor/niceselect/nice-select.min.css' %}">
+    <link rel="stylesheet" href="{% static 'en/vendor/bootstrap/bootstrap.min.css' %}">
+
+    <!-- CUSTOM CSS -->
+    <link rel="stylesheet" href="{% static 'en/css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'en/css/user-auth.css' %}">
+    <!--=====================================
+                CSS LINK PART END
+    =======================================-->
+</head>
+
+<body>
+    <!--=====================================
+                USER FORM PART START
+    =======================================-->
+    {% block body %}
+</body>
+</html>
+
 
 {% endblock body %}
         <!--=====================================

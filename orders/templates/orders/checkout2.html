@@ -208,7 +208,11 @@
         
         <div class="address-details">
             <p class="customer-name">{{ user.username }}</p>
-            <p class="address-line">Muranga, Town | Murang'a - Murang'a Town | {{ user.email }}</p>
+            {% if shipping_address %}
+                <p>{{ shipping_address }} | {{user.email}}</p>
+            {% else %}
+                <p>No shipping address found. | {{user.email}} </p>
+            {% endif %}
         </div>
         
         <div class="step completed">

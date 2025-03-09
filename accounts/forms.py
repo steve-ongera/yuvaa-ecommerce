@@ -55,13 +55,20 @@ class ActivationForm(forms.Form):
 from django import forms
 from .models import Profile
 from django.contrib.auth.models import User
+from orders.models import PickupStation
 
 class ProfileUpdateForm(forms.ModelForm):
     first_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'class': 'form-control'}))
     phone_number = forms.CharField(max_length=15, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    shipping_address = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    # Modify the shipping_address to use ModelChoiceField to create a dropdown
+    shipping_address = forms.ModelChoiceField(
+        queryset=PickupStation.objects.all(),  # All available PickupStation objects
+        required=False,  # Make this field optional
+        widget=forms.Select(attrs={'class': 'form-control'}),  # Use Select widget for dropdown
+        empty_label="Select a Pickup Station"  # You can set a custom label for the default empty option
+    )
     bio = forms.CharField(required=False, widget=forms.Textarea(attrs={'class': 'form-control'}))
     date_of_birth = forms.DateField(required=False, widget=forms.DateInput(attrs={'class': 'form-control'}))
     gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], required=False, widget=forms.Select(attrs={'class': 'form-control'}))

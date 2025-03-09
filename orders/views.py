@@ -12,6 +12,7 @@ from django.utils.timezone import now
 from datetime import timedelta
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from accounts.models import Profile
 
 
 from django.views.decorators.http import require_POST
@@ -200,6 +201,13 @@ def checkout(request):
             except Coupon.DoesNotExist:
                 messages.error(request, "Invalid coupon code")
 
+
+        # Fetch the user's profile and shipping address (with error handling)
+        profile, created = Profile.objects.get_or_create(user=user)
+        shipping_address = getattr(profile, 'shipping_address', None)
+    
+   
+
         #Prepare context for template
         context = {
             'cart_detail': cart_detail,
@@ -213,6 +221,8 @@ def checkout(request):
             'delivery_end_date': delivery_end_date,
             'pickup_station': order.pickup_station,
             'pickup_stations': PickupStation.objects.all(),
+            'shipping_address': shipping_address  # Pass the shipping address to the template
+        
         }
 
         return render(request, 'orders/checkout2.html', context)

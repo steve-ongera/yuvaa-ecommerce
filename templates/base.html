@@ -593,7 +593,7 @@
                     <li>
                         <a class="nav-link dropdown-link" href="#"><i class="icofont-bag-alt"></i>my account</a>
                         <ul class="dropdown-list">
-                            <li><a href="#">profile</a></li>
+                            <li><a href="{% url 'accounts:view_profile'%}">profile</a></li>
                             <li><a href="#">wallet</a></li>
                             <li><a href="#">wishlist</a></li>
                             <li><a href="#">checkout</a></li>
@@ -675,7 +675,7 @@
                 <span>wishlist</span>
                 <sup>0</sup>
             </a>
-            <a href="#" title="Compare List">
+            <a href="{% url 'accounts:view_profile'%}" title="Compare List">
                 <i class="fas fa-user"></i>
                 <span>Profile</span>
                

@@ -1,28 +1,178 @@
 {% extends "base.html" %}
 {% load static %}
-{% block CSS %}
-    <link rel="stylesheet" href="{% static 'en/css/profile.css' %}">
-{% endblock CSS %}
-{% block body %}
 
-<section class="inner-section">
+
+{% block body %}
+<link rel="stylesheet" href="{% static 'en/css/update_profile.css' %}">
+<!-- Profile Header -->
+<section class="profile-header">
     <div class="container">
         <div class="row">
-            <div class="col-lg-6">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i> Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Profile</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Update Profile</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
 
-
-                <h2>Update Profile</h2>
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </form>
-            
-            </div>    
-
-        </div>    
-
-    </div>    
-
-</div>    
+<!-- Update Profile Content -->
+<section class="profile-content">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="update-profile-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-user-edit"></i> Update Profile</h3>
+                        <p>Update your personal information and preferences</p>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data" class="update-profile-form">
+                            {% csrf_token %}
+                            
+                            <div class="form-sections">
+                                <!-- We'll organize form fields into sections -->
+                                <div class="form-section">
+                                    <h4 class="section-title">Personal Information</h4>
+                                    <div class="form-row">
+                                        {% for field in form %}
+                                            {% if field.name in "first_name,last_name,date_of_birth,gender,phone_number,email" %}
+                                                <div class="form-group">
+                                                    <label for="{{ field.id_for_label }}">
+                                                        {{ field.label }}
+                                                        {% if field.field.required %}
+                                                            <span class="required">*</span>
+                                                        {% endif %}
+                                                    </label>
+                                                    {{ field }}
+                                                    {% if field.help_text %}
+                                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                                    {% endif %}
+                                                    {% if field.errors %}
+                                                        <div class="invalid-feedback">
+                                                            {% for error in field.errors %}
+                                                                {{ error }}
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h4 class="section-title">Profile Image</h4>
+                                    <div class="form-row">
+                                        {% for field in form %}
+                                            {% if field.name == "image" %}
+                                                <div class="form-group image-upload-group">
+                                                    <label for="{{ field.id_for_label }}">
+                                                        {{ field.label }}
+                                                        {% if field.field.required %}
+                                                            <span class="required">*</span>
+                                                        {% endif %}
+                                                    </label>
+                                                    <div class="custom-file-upload">
+                                                        {{ field }}
+                                                        <div class="upload-button">
+                                                            <i class="fas fa-cloud-upload-alt"></i> Choose Image
+                                                        </div>
+                                                    </div>
+                                                    {% if field.help_text %}
+                                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                                    {% endif %}
+                                                    {% if field.errors %}
+                                                        <div class="invalid-feedback">
+                                                            {% for error in field.errors %}
+                                                                {{ error }}
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h4 class="section-title">Shopping Preferences</h4>
+                                    <div class="form-row">
+                                        {% for field in form %}
+                                            {% if field.name in "payment_method,shipping_address" %}
+                                                <div class="form-group">
+                                                    <label for="{{ field.id_for_label }}">
+                                                        {{ field.label }}
+                                                        {% if field.field.required %}
+                                                            <span class="required">*</span>
+                                                        {% endif %}
+                                                    </label>
+                                                    {{ field }}
+                                                    {% if field.help_text %}
+                                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                                    {% endif %}
+                                                    {% if field.errors %}
+                                                        <div class="invalid-feedback">
+                                                            {% for error in field.errors %}
+                                                                {{ error }}
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Any remaining fields that don't fit in the categories above -->
+                                <div class="form-section">
+                                    <h4 class="section-title">Additional Information</h4>
+                                    <div class="form-row">
+                                        {% for field in form %}
+                                            {% if field.name not in "first_name,last_name,date_of_birth,gender,phone_number,email,image,payment_method,shipping_address" %}
+                                                <div class="form-group">
+                                                    <label for="{{ field.id_for_label }}">
+                                                        {{ field.label }}
+                                                        {% if field.field.required %}
+                                                            <span class="required">*</span>
+                                                        {% endif %}
+                                                    </label>
+                                                    {{ field }}
+                                                    {% if field.help_text %}
+                                                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                                                    {% endif %}
+                                                    {% if field.errors %}
+                                                        <div class="invalid-feedback">
+                                                            {% for error in field.errors %}
+                                                                {{ error }}
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-update">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                                <a href="{% url 'accounts:view_profile'%}" class="btn btn-cancel">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

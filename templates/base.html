@@ -158,13 +158,20 @@
                     </a>
                     
                     {% if user.is_authenticated %}
-                        <form method="POST" action="{% url 'logout' %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="header-widget" style="background: none; border: none; padding: 0; cursor: pointer;">
+                        <div class="header-widget-container" style="display: inline-flex; align-items: center;">
+                            <!-- User icon with profile link -->
+                            <a href="{% url 'accounts:view_profile' %}" class="header-widget" title="My Profile" style="margin-right: 10px;">
                                 <img src="{% static 'en/images/user.png' %}" alt="user">
-                                <span>Logout</span>
-                            </button>
-                        </form>
+                            </a>
+                            
+                            <!-- Logout form -->
+                            <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="header-widget" style="background: none; border: none; padding: 0; cursor: pointer;">
+                                    <span>Logout</span>
+                                </button>
+                            </form>
+                        </div>
                     {% else %}
                         <a href="{% url 'login' %}" class="header-widget" title="My Account">
                             <img src="{% static 'en/images/user.png' %}" alt="user">

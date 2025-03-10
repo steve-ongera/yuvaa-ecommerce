@@ -122,6 +122,13 @@ class ProductList(ListView):
         if categories:
             category_ids = [int(id) for id in categories.split(',')]
             queryset = queryset.filter(category__id__in=category_ids)
+
+        #  Filter by price range
+        min_price = self.request.GET.get('min_price')
+        max_price = self.request.GET.get('max_price')
+        if min_price and max_price:
+            queryset = queryset.filter(price__gte=min_price, price__lte=max_price)
+
         
         # Apply sorting if requested
         sort_by = self.request.GET.get('sort')
@@ -133,7 +140,7 @@ class ProductList(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # ✅ Fixed the category product count issue
+        # Fixed the category product count issue
         context['categories'] = Category.objects.annotate(
             product_count=Count('category_products')  # Correct related_name for Product
         ).order_by('name')
@@ -169,6 +176,11 @@ class ProductList(ListView):
             context['selected_category_ids'] = [int(id) for id in selected_categories.split(',')]
         else:
             context['selected_category_ids'] = []
+
+
+        # Pass price filters to the template
+        context['min_price'] = self.request.GET.get('min_price', '')
+        context['max_price'] = self.request.GET.get('max_price', '')    
         
         return context
 

@@ -31,17 +31,18 @@
                         </div>
                         <div class="shop-widget">
                             <h6 class="shop-widget-title">Filter by Price</h6>
-                            <form>
+                            <form method="GET">
                                 <div class="shop-widget-group">
-                                    <input type="text" placeholder="Min - 00">
-                                    <input type="text" placeholder="Max - 5k">
+                                    <input type="number" name="min_price" placeholder="Min - 00" value="{{ min_price }}">
+                                    <input type="number" name="max_price" placeholder="Max - 5k" value="{{ max_price }}">
                                 </div>
-                                <button class="shop-widget-btn">
+                                <button class="shop-widget-btn" type="submit">
                                     <i class="fas fa-search"></i>
-                                    <span>search</span>
+                                    <span>Search</span>
                                 </button>
                             </form>
                         </div>
+                        
                         <div class="shop-widget">
                             <h6 class="shop-widget-title">Filter by Rating</h6>
                             <form>

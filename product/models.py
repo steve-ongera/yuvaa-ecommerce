@@ -36,10 +36,7 @@ class Category(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
     
-    @property
-    def product_count(self):
-        """Return the number of products in this category"""
-        return self.product_set.count()
+ 
     
     @property
     def get_full_path(self):

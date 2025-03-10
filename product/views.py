@@ -133,9 +133,9 @@ class ProductList(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Get all categories with product count - using the correct related_name
+        # ✅ Fixed the category product count issue
         context['categories'] = Category.objects.annotate(
-            product_count=Count('category_products')  # This is the correct related_name
+            product_count=Count('category_products')  # Correct related_name for Product
         ).order_by('name')
         
         # Get all brands with product count

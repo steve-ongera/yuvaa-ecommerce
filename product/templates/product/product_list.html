@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
 {% load static %}
 {% block body %}
 <!--=====================================
@@ -232,21 +233,29 @@
                             </form>
                         </div>
                         <div class="shop-widget">
-                            <h6 class="shop-widget-title">Filter by Category</h6>
-                            <form>
+                            <h6 class="shop-widget-title">Filter by Brand</h6>
+                            <form method="get" >
                                 <input class="shop-widget-search" type="text" placeholder="Search...">
                                 <ul class="shop-widget-list shop-widget-scroll">
                                     {% for brand in brands %}
                                     <li>
                                         <div class="shop-widget-content">
-                                            <input type="checkbox" id="cate1">
-                                            <label for="cate1">{{ brand.name }}</label>
+                                            <input type="checkbox" id="brand{{ brand.id }}" class="brand-checkbox" 
+                                                   value="{{ brand.id }}" {% if brand.id|stringformat:"i" in request.GET.brands|default:""|split:"," %}checked{% endif %}>
+                                            <label for="brand{{ brand.id }}">{{ brand.name }}</label>
                                         </div>
-                                        <span class="shop-widget-number">{{brand.product_count}}</span>
+                                        <span class="shop-widget-number">({{ brand.product_count }})</span>
                                     </li>
                                     {% endfor %}
                                     
                                 </ul>
+
+                                <button type="submit" class="shop-widget-btn apply-filter" style="margin-top: 10px;">
+                                    <i class="fas fa-filter"></i>
+                                    <span>apply filter</span>
+                                </button>
+
+
                                 <button class="shop-widget-btn">
                                     <i class="far fa-trash-alt"></i>
                                     <span>clear filter</span>
@@ -400,5 +409,116 @@
         <!--=====================================
                     NEWSLETTER PART END
         =======================================-->
+        <!-- JavaScript for the filters -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Helper function to get all parameters from URL
+        function getAllUrlParams() {
+            let params = {};
+            let queryString = window.location.search.slice(1);
+            if (queryString) {
+                queryString.split('&').forEach(function(item) {
+                    let pair = item.split('=');
+                    params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+                });
+            }
+            return params;
+        }
+        
+        // Handle category checkboxes
+        const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+        const selectedCategoriesInput = document.getElementById('selected-categories');
+        
+        categoryCheckboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                let selectedCategories = [];
+                categoryCheckboxes.forEach(function(cb) {
+                    if (cb.checked) {
+                        selectedCategories.push(cb.value);
+                    }
+                });
+                selectedCategoriesInput.value = selectedCategories.join(',');
+            });
+        });
+        
+        // Handle brand checkboxes
+        const brandCheckboxes = document.querySelectorAll('.brand-checkbox');
+        const selectedBrandsInput = document.getElementById('selected-brands');
+        
+        brandCheckboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                let selectedBrands = [];
+                brandCheckboxes.forEach(function(cb) {
+                    if (cb.checked) {
+                        selectedBrands.push(cb.value);
+                    }
+                });
+                selectedBrandsInput.value = selectedBrands.join(',');
+            });
+        });
+        
+        // Handle clear filter buttons
+        const clearFilterButtons = document.querySelectorAll('.clear-filter');
+        
+        clearFilterButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                const formId = this.getAttribute('data-form');
+                const form = document.getElementById(formId);
+                
+                // Clear all inputs
+                form.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
+                    checkbox.checked = false;
+                });
+                
+                form.querySelectorAll('input[type="number"], input[type="text"], input[type="hidden"]').forEach(function(input) {
+                    input.value = '';
+                });
+                
+                // Submit the form
+                form.submit();
+            });
+        });
+        
+        // Handle search inputs
+        const searchInputs = document.querySelectorAll('.shop-widget-search');
+        
+        searchInputs.forEach(function(input) {
+            input.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const listItems = this.closest('form').querySelectorAll('.shop-widget-list li');
+                
+                listItems.forEach(function(item) {
+                    const labelText = item.querySelector('label').textContent.toLowerCase();
+                    if (labelText.includes(searchTerm)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Initialize from URL parameters
+        const urlParams = getAllUrlParams();
+        
+        // Set category values from URL
+        if (urlParams.categories) {
+            const categoryIds = urlParams.categories.split(',');
+            categoryIds.forEach(function(id) {
+                const checkbox = document.getElementById('category' + id);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+        
+        // Set brand values from URL
+        if (urlParams.brands) {
+            const brandIds = urlParams.brands.split(',');
+            brandIds.forEach(function(id) {
+                const checkbox = document.getElementById('brand' + id);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+    });
+    </script>
 {% endblock body %}
 

@@ -8,6 +8,59 @@ from django.db.models.aggregates import Avg
 from django.db.models import Avg
 from decimal import Decimal
 
+from django.db import models
+from django.utils.text import slugify
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=120, unique=True, blank=True)
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, 
+                                related_name='children')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    display_order = models.IntegerField(default=0)
+    
+    class Meta:
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+        ordering = ['display_order', 'name']
+    
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+    
+    @property
+    def product_count(self):
+        """Return the number of products in this category"""
+        return self.product_set.count()
+    
+    @property
+    def get_full_path(self):
+        """Return the full category path (including parent categories)"""
+        if self.parent:
+            return f"{self.parent.get_full_path} > {self.name}"
+        return self.name
+    
+    @property
+    def has_children(self):
+        """Check if category has child categories"""
+        return self.children.exists()
+    
+    @property
+    def get_all_children(self):
+        """Get all descendant categories recursively"""
+        children = list(self.children.all())
+        for child in list(children):
+            children.extend(child.get_all_children)
+        return children
+
 class PickupStation(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=200)

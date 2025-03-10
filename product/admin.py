@@ -31,6 +31,18 @@ class ProductAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+from django.contrib import admin
+from .models import Category
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'parent', 'is_active', 'product_count', 'display_order')
+    list_filter = ('is_active', 'parent')
+    search_fields = ('name', 'description')
+    prepopulated_fields = {'slug': ('name',)}
+    list_editable = ('is_active', 'display_order')
+
+    
 admin.site.register(Product,ProductAdmin)
 admin.site.register(ProductImages)
 admin.site.register(Brand)

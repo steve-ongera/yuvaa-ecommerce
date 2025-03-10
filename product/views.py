@@ -1,6 +1,6 @@
 from django.shortcuts import render , redirect
 from django.views.generic import ListView , DetailView
-from .models import Product ,Brand ,ProductImages ,Review
+from .models import Product ,Brand ,ProductImages ,Review , Category
 from django.db.models import Q , F , Value
 from django.db.models.aggregates import Max , Min , Count , Avg , Sum
 from django.views.decorators.cache import cache_page
@@ -106,7 +106,71 @@ def queryset_debug(request):
 
 class ProductList(ListView):
     model = Product
-    paginate_by = 30
+    paginate_by = 28
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filter by brand if specified
+        brands = self.request.GET.get('brands')
+        if brands:
+            brand_ids = [int(id) for id in brands.split(',')]
+            queryset = queryset.filter(brand__id__in=brand_ids)
+        
+        # Filter by category if specified
+        categories = self.request.GET.get('categories')
+        if categories:
+            category_ids = [int(id) for id in categories.split(',')]
+            queryset = queryset.filter(category__id__in=category_ids)
+        
+        # Apply sorting if requested
+        sort_by = self.request.GET.get('sort')
+        if sort_by:
+            queryset = queryset.order_by(sort_by)
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get all categories with product count - using the correct related_name
+        context['categories'] = Category.objects.annotate(
+            product_count=Count('category_products')  # This is the correct related_name
+        ).order_by('name')
+        
+        # Get all brands with product count
+        # Let's try to determine the correct related_name for Brand
+        try:
+            context['brands'] = Brand.objects.annotate(
+                product_count=Count('product_brand')  # Based on your serializer
+            ).order_by('name')
+        except Exception as e:
+            # Fallback to trying different related names if the first one fails
+            try:
+                context['brands'] = Brand.objects.annotate(
+                    product_count=Count('brand_products')  # Another common naming pattern
+                ).order_by('name')
+            except Exception:
+                # If all else fails, try the default related_name
+                context['brands'] = Brand.objects.annotate(
+                    product_count=Count('product_set')  # Django default related_name
+                ).order_by('name')
+        
+        # Get selected brand IDs
+        selected_brands = self.request.GET.get('brands', '')
+        if selected_brands:
+            context['selected_brand_ids'] = [int(id) for id in selected_brands.split(',')]
+        else:
+            context['selected_brand_ids'] = []
+        
+        # Get selected category IDs
+        selected_categories = self.request.GET.get('categories', '')
+        if selected_categories:
+            context['selected_category_ids'] = [int(id) for id in selected_categories.split(',')]
+        else:
+            context['selected_category_ids'] = []
+        
+        return context
 
 
 class ProductDetail(DetailView):

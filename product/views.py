@@ -10,6 +10,7 @@ from .tasks import send_emails
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.core.paginator import Paginator
+from taggit.models import Tag
 # Create your views here.
 
 
@@ -123,6 +124,15 @@ class ProductList(ListView):
             category_ids = [int(id) for id in categories.split(',')]
             queryset = queryset.filter(category__id__in=category_ids)
 
+
+
+        # ✅ Improved Filtering by Tags (Ensuring all tags match)
+        tags = self.request.GET.getlist('tags')
+        if tags:
+            for tag in tags:
+                queryset = queryset.filter(tags__name=tag)
+
+
         #  Filter by price range
         min_price = self.request.GET.get('min_price')
         max_price = self.request.GET.get('max_price')
@@ -181,6 +191,16 @@ class ProductList(ListView):
         # Pass price filters to the template
         context['min_price'] = self.request.GET.get('min_price', '')
         context['max_price'] = self.request.GET.get('max_price', '')    
+
+
+        context['tags'] = Tag.objects.annotate(
+            product_count=Count('taggit_taggeditem_items')  # Correct related name for django-taggit
+         ).order_by('-product_count')[:5]  # Get the top 5 tags
+
+
+        # ✅ Pass selected tags
+        context['selected_tags'] = self.request.GET.getlist('tags')
+
         
         return context
 

@@ -121,50 +121,32 @@
                         </div>
                         <div class="shop-widget">
                             <h6 class="shop-widget-title">Filter by Tag</h6>
-                            <form>
+                            <form method="GET">
                                 <ul class="shop-widget-list">
+                                    {% for tag in tags %}
                                     <li>
                                         <div class="shop-widget-content">
-                                            <input type="checkbox" id="tag1">
-                                            <label for="tag1">new items</label>
+                                            <input type="checkbox" id="tag{{ tag.id }}" name="tags" value="{{ tag.name }}"
+                                                {% if tag.name in selected_tags %}checked{% endif %}>
+                                            <label for="tag{{ tag.id }}">{{ tag.name }}</label>
                                         </div>
-                                        <span class="shop-widget-number">(13)</span>
+                                        <span class="shop-widget-number">({{ tag.product_count }})</span>
                                     </li>
-                                    <li>
-                                        <div class="shop-widget-content">
-                                            <input type="checkbox" id="tag2">
-                                            <label for="tag2">sale items</label>
-                                        </div>
-                                        <span class="shop-widget-number">(28)</span>
-                                    </li>
-                                    <li>
-                                        <div class="shop-widget-content">
-                                            <input type="checkbox" id="tag3">
-                                            <label for="tag3">rating items</label>
-                                        </div>
-                                        <span class="shop-widget-number">(35)</span>
-                                    </li>
-                                    <li>
-                                        <div class="shop-widget-content">
-                                            <input type="checkbox" id="tag4">
-                                            <label for="tag4">feature items</label>
-                                        </div>
-                                        <span class="shop-widget-number">(47)</span>
-                                    </li>
-                                    <li>
-                                        <div class="shop-widget-content">
-                                            <input type="checkbox" id="tag5">
-                                            <label for="tag5">discount items</label>
-                                        </div>
-                                        <span class="shop-widget-number">(59)</span>
-                                    </li>
+                                    {% endfor %}
                                 </ul>
-                                <button class="shop-widget-btn">
-                                    <i class="far fa-trash-alt"></i>
-                                    <span>clear filter</span>
+                        
+                                <button style="margin-bottom:5px" style="margin-bottom:5px" type="submit" class="shop-widget-btn">
+                                    <i class="far fa-filter"></i>
+                                    <span>Apply Filter</span>
                                 </button>
+                        
+                                <a href="{{ request.path }}" class="shop-widget-btn">
+                                    <i class="far fa-trash-alt"></i>
+                                    <span>Clear Filter</span>
+                                </a>
                             </form>
                         </div>
+                        
                         <div class="shop-widget">
                             <h6 class="shop-widget-title">Filter by Category</h6>
                             <form method="get" id="categoryFilterForm">
@@ -191,12 +173,12 @@
                                     {% endfor %}
                                 {% endif %}
                                 
-                                <button type="submit" class="shop-widget-btn apply-filter" style="margin-top: 10px;">
+                                <button type="submit" class="shop-widget-btn apply-filter" style="margin-top: 10px; margin-bottom:8px">
                                     <i class="fas fa-filter"></i>
                                     <span>apply filter</span>
                                 </button>
 
-                                <br>
+                               
                         
                                 <button type="button" class="shop-widget-btn" onclick="clearFilters()">
                                     <i class="far fa-trash-alt"></i>
@@ -260,12 +242,12 @@
                                     {% endfor %}
                                 {% endif %}
                                 
-                                <button type="submit" class="shop-widget-btn apply-filter" style="margin-top: 10px;">
+                                <button type="submit" class="shop-widget-btn apply-filter" style="margin-top: 10px; margin-bottom:8px">
                                     <i class="fas fa-filter"></i>
                                     <span>apply filter</span>
                                 </button>
 
-                                <br>
+                                
                         
                                 <button type="button" class="shop-widget-btn" onclick="clearFilters()">
                                     <i class="far fa-trash-alt"></i>

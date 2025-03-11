@@ -4,6 +4,116 @@
 {% load django_bootstrap5 %}
 {% block body %}
 
+<style>
+   
+
+    /* Input fields */
+    .user-form input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #b19cd9; /* Light purple border */
+        border-radius: 5px;
+        font-size: 16px;
+        background: #f8f4ff; /* Soft purple background */
+        color: #4b0082; /* Deep purple text */
+    }
+    
+    .user-form input:focus {
+        outline: none;
+        border-color: #800080; /* Dark purple border */
+        box-shadow: 0px 0px 5px rgba(128, 0, 128, 0.5); /* Purple glow */
+    }
+
+    .user-form label {
+        font-weight: bold;
+        
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+
+    
+    .message-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;  /* Changed to right side */
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .message {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transform: translateX(120%);  /* Start from the right */
+        transition: transform 0.5s ease, opacity 0.5s ease;
+        opacity: 1;
+    }
+    
+    .message.error {
+        background-color: #f44336;
+    }
+    
+    .message.success {
+        background-color: #4caf50;
+    }
+    
+    .message.slide-in {
+        transform: translateX(0);  /* Slide in to normal position */
+    }
+    
+    .message.fade-out {
+        opacity: 0;
+        transform: translateX(120%);  /* Slide out to the right */
+    }
+    
+    
+
+    
+    
+    
+</style>
+
+    {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Include this at the bottom of your home.html -->
+    <script>
+        // Wait for the page to load
+        document.addEventListener("DOMContentLoaded", function() {
+            // Select all message divs
+            const messages = document.querySelectorAll('.message');
+            
+            messages.forEach((msg, index) => {
+                // Slide in animation from right
+                setTimeout(() => {
+                    msg.classList.add('slide-in');
+                }, index * 200); // Delay each message slightly
+
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    msg.classList.add('fade-out');
+                    msg.addEventListener('transitionend', () => {
+                        msg.remove();
+                    });
+                }, 5000);
+            });
+        });
+    </script>
+    
+
         <section class="user-form-part">
             <div class="container">
                 <div class="row justify-content-center">
@@ -18,16 +128,18 @@
                             </div>
                             <div class="user-form-group">
                                 
-                                <form class="user-form" method="post">
+                                <form class="user-form" method="post" action="{% url 'accounts:login' %}">
                                     {% csrf_token %}
-                                    {% bootstrap_form form %}
+                                    <label for="username">Username</label>
+                                    <input type="text" name="username" placeholder="Username">
 
-                                    {% comment %} {% bootstrap_button button_type="submit" content="login" %} {% endcomment %}
-
+                                    <label for="password">Password</label>
+                                    <input  type="password" name="password" placeholder="Password">
+                                   
                                     <input type="hidden" name="next" value="{{ next }}">
                                     <div class="form-button">
                                         <button type="submit">login</button>
-                                        <p>Forgot your password?<a href="{% url 'password_reset' %}">reset here</a></p>
+                                        <p>Forgot your password?<a href="#">reset here</a></p>
                                     </div>
                                 </form>
                             </div>

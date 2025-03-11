@@ -4,39 +4,42 @@ from django.contrib.auth.forms import UserCreationForm
 
 class SignupForm(UserCreationForm):
     username = forms.CharField(
-        widget=forms.TextInput(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter Username',
+        })
+    )
+
+    email = forms.EmailField(
+        widget=forms.EmailInput(
             attrs={
                 'class': 'form-control',
-                'placeholder': 'Enter Username',
+                'placeholder': 'Enter Email',
             }
-        )
+        ),
+        label="Email"
     )
 
     password1 = forms.CharField(
-        widget=forms.PasswordInput(
-            attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter Password',
-            }
-        ),
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter Password',
+        }),
         label="Password",
     )
 
     password2 = forms.CharField(
-        widget=forms.PasswordInput(
-            attrs={
-                'class': 'form-control',
-                'placeholder': 'Confirm Password',
-            }
-        ),
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm Password',
+        }),
         label="Confirm Password",
     )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ['username', 'password1', 'password2']
 
-    # Override the clean_password2 method to allow any password string
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')

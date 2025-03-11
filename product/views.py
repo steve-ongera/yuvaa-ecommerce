@@ -205,6 +205,7 @@ class ProductList(ListView):
         return context
 
 
+
 class ProductDetail(DetailView):
     model = Product
 

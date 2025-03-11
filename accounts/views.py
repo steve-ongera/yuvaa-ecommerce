@@ -4,10 +4,39 @@ from django.contrib.auth.models import User
 from .models import Profile
 from django.core.mail import send_mail
 from django.contrib.auth import logout
+from django.contrib.auth import authenticate , login
 from django.views import View
 from django.contrib import messages
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+def login_view(request):
+    next_url = request.GET.get("next", "/")  # Get the 'next' parameter from GET request
+    
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            messages.success(request, "You have been logged in successfully.")
+            next_url = request.POST.get("next", "/")  # Get the 'next' parameter from the form submission
+            return redirect(next_url)
+        else:
+            messages.error(request, "Invalid username or password")
+    
+    # Pass the next_url to the template context
+    return render(request, "registration/login.html", {"next": next_url})
+
+
+
+
+
 
 
 def signup(request):
@@ -47,7 +76,7 @@ def signup(request):
 def logout_view(request):
     logout(request)
     messages.success(request, "You have been logged out.")
-    return redirect('login')
+    return redirect('/')
 
 #this part of the view has already be implimented on the signup view automatically 
 def activate(request, username):

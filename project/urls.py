@@ -29,15 +29,15 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
-    path("accounts/", include("django.contrib.auth.urls")),
+    #path("accounts/", include("django.contrib.auth.urls")),
     path("accounts/", include("accounts.urls",namespace='accounts')),
     path('admin/', admin.site.urls),
     path('products/', include('product.urls',namespace='product')),
     path('orders/', include('orders.urls',namespace='orders')),
     path('', include('settings.urls')),
     path("__debug__/", include("debug_toolbar.urls")),
-    path('dj-rest-auth/', include('dj_rest_auth.urls')),
-    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+    #path('dj-rest-auth/', include('dj_rest_auth.urls')),
+    #path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
     path("i18n/", include("django.conf.urls.i18n")),
     path('rosetta/', include('rosetta.urls')),
 

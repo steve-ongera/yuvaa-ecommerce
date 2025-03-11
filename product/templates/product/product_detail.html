@@ -329,7 +329,7 @@
                                     </script>
                                 {% else %}
                                     <p>You must be logged in to add items to your cart. 
-                                        <a href="{% url 'login' %}?next={{ request.path }}">Login here</a>
+                                        <a href="{% url 'accounts:login' %}?next={{ request.path }}">Login here</a>
                                     </p>
                                 {% endif %}
 
@@ -394,16 +394,11 @@
                                             <span>drop your review</span>
                                         </button>
                                         {% else %}
-                                        <p>You must be Login first.<a href="{% url 'login' %}?next={{ request.path }}">Login here</a></p>
+                                        <p>You must be Login first.<a href="{% url 'accounts:login' %}?next={{ request.path }}">Login here</a></p>
                                         {% endif %}
                                     </div>
 
-                                    
-                                       
-                                            
-                                       
-                                   
-                                    
+
                                 </div>
                             </form>
                         </div>

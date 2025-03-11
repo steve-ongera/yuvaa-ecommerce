@@ -141,3 +141,108 @@ def update_profile(request):
         form = ProfileUpdateForm(instance=profile)
 
     return render(request, 'registration/update_profile.html', {'form': form})
+
+
+# reset password views
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth import get_user_model
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.urls import reverse
+
+User = get_user_model()
+
+def password_reset_request(request):
+    """View to handle password reset requests and send verification emails"""
+    if request.method == "POST":
+        email = request.POST.get("email", "")
+        
+        # Check if the email exists in the database
+        try:
+            user = User.objects.get(email=email)
+            
+            # Generate a token and uid for the user
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            
+            # Build the reset URL
+            reset_url = request.build_absolute_uri(
+                reverse('accounts:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            )
+            
+            # Render the email template
+            email_subject = "Password Reset Request"
+            email_body = render_to_string('registration/password_reset_email.html', {
+                'user': user,
+                'reset_url': reset_url,
+                'site_name': request.get_host(),
+            })
+            
+            # Send the email
+            send_mail(
+                email_subject,
+                email_body,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+            
+            messages.success(request, "A password reset link has been sent to your email address.")
+            return redirect('accounts:password_reset_done')
+        
+        except User.DoesNotExist:
+            # We don't want to reveal that the email is not in the database for security reasons
+            messages.success(request, "A password reset link has been sent to your email address if it exists in our system.")
+            return redirect('accounts:password_reset_done')
+    
+    return render(request, 'registration/password_reset_form.html')
+
+
+def password_reset_done(request):
+    """View to show after a password reset email has been sent"""
+    return render(request, 'registration/password_reset_done.html')
+
+
+def password_reset_confirm(request, uidb64, token):
+    """View to confirm the reset link and allow the user to set a new password"""
+    try:
+        # Decode the user id
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+        
+        # Check if the token is valid
+        if default_token_generator.check_token(user, token):
+            if request.method == "POST":
+                # Get the new password
+                new_password = request.POST.get("new_password", "")
+                confirm_password = request.POST.get("confirm_password", "")
+                
+                # Validate the passwords
+                if new_password == confirm_password:
+                    # Set the new password
+                    user.set_password(new_password)
+                    user.save()
+                    messages.success(request, "Your password has been reset successfully. You can now log in with your new password.")
+                    return redirect('accounts:login')
+                else:
+                    messages.error(request, "Passwords do not match.")
+            
+            return render(request, 'registration/password_reset_confirm.html', {'validlink': True})
+        else:
+            # Token is invalid or expired
+            return render(request, 'registration/password_reset_confirm.html', {'validlink': False})
+    
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        # Invalid user id
+        return render(request, 'registration/password_reset_confirm.html', {'validlink': False})
+
+
+def password_reset_complete(request):
+    """View to show after a password has been successfully reset"""
+    return render(request, 'registration/password_reset_complete.html')

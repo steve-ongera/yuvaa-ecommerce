@@ -224,6 +224,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'innovationhubsoftwaresltd@gmail.com'
 EMAIL_HOST_PASSWORD = 'wtzg mvcn ztoe qige'
+DEFAULT_FROM_EMAIL = 'Yuvaa Fashonna <yuvaafashona@gmail.com>'
 
 
 

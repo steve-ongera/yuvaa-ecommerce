@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-fbdxyz@l6u0g!&gubim20i^k*y&yhinp42e$co=hw7)(dn%hx*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*','https://c260-2c0f-6300-d09-fd00-816b-11ed-a22e-d0da.ngrok-free.app']
+ALLOWED_HOSTS = ['*','https://0aabbc063b29.ngrok-free.app']
 
 
 # Application definition
@@ -65,7 +65,7 @@ REST_FRAMEWORK = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://c260-2c0f-6300-d09-fd00-816b-11ed-a22e-d0da.ngrok-free.app',
+    'https://191ca1cf5751.ngrok-free.app',
 ]
 
 
@@ -168,13 +168,11 @@ USE_TZ = True
 
 
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 MEDIA_URL='media/'
 MEDIA_ROOT=BASE_DIR / "media"
@@ -229,13 +227,16 @@ DEFAULT_FROM_EMAIL = 'Yuvaa Fashonna <yuvaafashona@gmail.com>'
 
 
 
-MPESA_ENVIRONMENT = 'sandbox'  # Change to 'production' for live environment
-MPESA_CONSUMER_KEY = 'your_consumer_key'  # Get from Safaricom Developer Portal
-MPESA_CONSUMER_SECRET = 'your_consumer_secret'  # Get from Safaricom Developer Portal
-MPESA_SHORTCODE = '174379'  # Your Paybill number
-MPESA_PASSKEY = 'your_passkey'  # Get from Safaricom
-MPESA_CONFIRMATION_URL = 'https://your-domain.com/mpesa/confirmation/'  # For C2B integration
-MPESA_VALIDATION_URL = 'https://your-domain.com/mpesa/validation/'  # For C2B integration
+from decouple import config  # pip install python-decouple
+
+# M-Pesa Settings
+MPESA_ENVIRONMENT = config('MPESA_ENVIRONMENT', default='sandbox')
+MPESA_CONSUMER_KEY = config('MPESA_CONSUMER_KEY')
+MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET')
+MPESA_SHORTCODE = config('MPESA_SHORTCODE')
+MPESA_PASSKEY = config('MPESA_PASSKEY')
+MPESA_CALLBACK_URL = config('MPESA_CALLBACK_URL')
+MPESA_API_URL = config('MPESA_API_URL', default='https://sandbox.safaricom.co.ke')
 
 
 from django.contrib.messages import constants as messages

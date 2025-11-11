@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Loading Modal (Auto-shown) -->
+<div id="loadingModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 max-w-sm w-full mx-4 text-center">
+        <!-- Spinner -->
+        <div class="flex justify-center mb-4">
+            <svg class="animate-spin h-16 w-16 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+        
+        <!-- Status Messages -->
+        <div id="statusMessage">
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Processing Payment</h3>
+            <p class="text-gray-600 mb-4">Please check your phone and enter your M-Pesa PIN</p>
+            <p class="text-sm text-gray-500 mb-4">Waiting for payment confirmation...</p>
+            <div class="flex items-center justify-center space-x-2">
+                <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-4">Transaction ID: {{ transaction.transaction_id }}</p>
+        </div>
+
+        <!-- Success Message (hidden by default) -->
+        <div id="successMessage" class="hidden">
+            <div class="flex justify-center mb-4">
+                <svg class="h-16 w-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-green-600 mb-2">Payment Successful!</h3>
+            <p class="text-gray-600 mb-4">Your order has been placed successfully.</p>
+            <p id="receiptNumber" class="text-sm text-gray-500 mb-2"></p>
+            <p class="text-xs text-gray-400">Redirecting to order confirmation...</p>
+        </div>
+
+        <!-- Failed Message (hidden by default) -->
+        <div id="failedMessage" class="hidden">
+            <div class="flex justify-center mb-4">
+                <svg class="h-16 w-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-red-600 mb-2">Payment Failed</h3>
+            <p class="text-gray-600 mb-4">The payment was not completed or was cancelled.</p>
+            <button onclick="retryPayment()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 mr-2">
+                Try Again
+            </button>
+            <button onclick="goHome()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">
+                Cancel
+            </button>
+        </div>
+
+        <!-- Timeout Message (hidden by default) -->
+        <div id="timeoutMessage" class="hidden">
+            <div class="flex justify-center mb-4">
+                <svg class="h-16 w-16 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-yellow-600 mb-2">Payment Pending</h3>
+            <p class="text-gray-600 mb-4">We're still waiting for payment confirmation. This may take a few minutes.</p>
+            <button onclick="checkAgain()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 mr-2">
+                Check Again
+            </button>
+            <button onclick="goHome()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">
+                Continue Shopping
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const transactionId = {{ transaction.id }};
+    let checkInterval;
+    let checkAttempts = 0;
+    const maxAttempts = 120; // Check for 2 minutes (120 attempts * 1 second)
+
+    function showSuccess(receiptNumber) {
+        document.getElementById('statusMessage').classList.add('hidden');
+        document.getElementById('successMessage').classList.remove('hidden');
+        if (receiptNumber) {
+            document.getElementById('receiptNumber').textContent = `Receipt No: ${receiptNumber}`;
+        }
+        
+        // Redirect to success page after 3 seconds
+        setTimeout(() => {
+            window.location.href = "{% url 'orders:order_success' %}";
+        }, 3000);
+    }
+
+    function showFailed() {
+        document.getElementById('statusMessage').classList.add('hidden');
+        document.getElementById('failedMessage').classList.remove('hidden');
+    }
+
+    function showTimeout() {
+        document.getElementById('statusMessage').classList.add('hidden');
+        document.getElementById('timeoutMessage').classList.remove('hidden');
+    }
+
+    function checkPaymentStatus() {
+        checkAttempts++;
+        
+        fetch(`/orders/check-status/${transactionId}/`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Payment status:', data.status);
+                
+                if (data.status === 'completed') {
+                    clearInterval(checkInterval);
+                    showSuccess(data.mpesa_receipt_number);
+                } else if (data.status === 'failed') {
+                    clearInterval(checkInterval);
+                    showFailed();
+                } else if (checkAttempts >= maxAttempts) {
+                    // Timeout after max attempts
+                    clearInterval(checkInterval);
+                    showTimeout();
+                }
+            })
+            .catch(error => {
+                console.error('Error checking status:', error);
+                if (checkAttempts >= maxAttempts) {
+                    clearInterval(checkInterval);
+                    showTimeout();
+                }
+            });
+    }
+
+    function checkAgain() {
+        checkAttempts = 0;
+        document.getElementById('timeoutMessage').classList.add('hidden');
+        document.getElementById('statusMessage').classList.remove('hidden');
+        startChecking();
+    }
+
+    function retryPayment() {
+        window.location.href = "{% url 'orders:pay' %}";
+    }
+
+    function goHome() {
+        window.location.href = "#";
+    }
+
+    function startChecking() {
+        // Start checking immediately
+        checkPaymentStatus();
+        
+        // Then check every second
+        checkInterval = setInterval(checkPaymentStatus, 1000);
+    }
+
+    // Start checking when page loads
+    window.addEventListener('DOMContentLoaded', function() {
+        startChecking();
+    });
+
+    // Clean up interval when leaving page
+    window.addEventListener('beforeunload', function() {
+        if (checkInterval) {
+            clearInterval(checkInterval);
+        }
+    });
+</script>
+
+{% endblock body %}

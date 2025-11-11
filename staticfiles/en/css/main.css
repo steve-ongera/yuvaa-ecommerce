@@ -1936,6 +1936,17 @@ tbody tr td:last-child {
   margin-bottom: 3px;
   text-transform: capitalize;
 }
+/*
+.product-card-name {
+  text-decoration: none;
+  display: block;
+  margin-bottom: 8px;
+  height: 36px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}*/
 
 .product-name a {
   color: var(--sub-heading);

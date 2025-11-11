@@ -2,21 +2,26 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
+from django import forms
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
+from django.core.exceptions import ValidationError
+
 class SignupForm(UserCreationForm):
     username = forms.CharField(
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter Username',
+            'id': 'username',
         })
     )
 
     email = forms.EmailField(
-        widget=forms.EmailInput(
-            attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter Email',
-            }
-        ),
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter Email',
+            'id': 'email',
+        }),
         label="Email"
     )
 
@@ -24,6 +29,7 @@ class SignupForm(UserCreationForm):
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter Password',
+            'id': 'password1',
         }),
         label="Password",
     )
@@ -32,21 +38,44 @@ class SignupForm(UserCreationForm):
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
             'placeholder': 'Confirm Password',
+            'id': 'password2',
         }),
         label="Confirm Password",
     )
 
     class Meta:
         model = User
-        fields = ['username', 'password1', 'password2']
+        fields = ['username', 'email', 'password1', 'password2']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove all password validators
+        self.fields['password1'].help_text = None
+        self.fields['password2'].help_text = None
+        
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("This username is already taken.")
+        return username
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("This email is already registered.")
+        return email
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')
 
         if password1 != password2:
-            raise forms.ValidationError("Passwords do not match.")
+            raise ValidationError("Passwords do not match.")
         return password2
+    
+    def _post_clean(self):
+        # Override to skip Django's password validation
+        super(UserCreationForm, self)._post_clean()
 
 
 

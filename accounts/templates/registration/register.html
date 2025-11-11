@@ -5,82 +5,411 @@
 {% block body %}
 
 <style>
-    /* Form Labels */
-.user-form label {
-    font-weight: bold;
+    /* Input fields */
+    .user-form input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 5px;
+        border: 1px solid #b19cd9;
+        border-radius: 5px;
+        font-size: 16px;
+        background: #f8f4ff;
+        color: #4b0082;
+    }
     
-    display: block;
-    margin-bottom: 5px;
-}
+    .user-form input:focus {
+        outline: none;
+        border-color: #800080;
+        box-shadow: 0px 0px 5px rgba(128, 0, 128, 0.5);
+    }
 
+    .user-form input.error-input {
+        border-color: #f44336;
+    }
+
+    .user-form input.success-input {
+        border-color: #4caf50;
+    }
+
+    .user-form label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        color: #4b0082;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    /* Validation messages */
+    .validation-message {
+        font-size: 12px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        padding: 5px 10px;
+        border-radius: 3px;
+        display: none;
+    }
+
+    .validation-message.error {
+        background-color: #ffebee;
+        color: #c62828;
+        border-left: 3px solid #f44336;
+        display: block;
+    }
+
+    .validation-message.success {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border-left: 3px solid #4caf50;
+        display: block;
+    }
+
+    .validation-message.info {
+        background-color: #e3f2fd;
+        color: #1565c0;
+        border-left: 3px solid #2196f3;
+        display: block;
+    }
+
+    /* Username suggestions */
+    .username-suggestions {
+        display: none;
+        margin-top: 5px;
+        padding: 10px;
+        background-color: #fff3e0;
+        border-radius: 5px;
+        border-left: 3px solid #ff9800;
+    }
+
+    .username-suggestions.show {
+        display: block;
+    }
+
+    .username-suggestions p {
+        margin: 0 0 8px 0;
+        font-size: 13px;
+        color: #e65100;
+        font-weight: bold;
+    }
+
+    .suggestion-chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .suggestion-chip {
+        background-color: #800080;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 15px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.3s ease;
+    }
+
+    .suggestion-chip:hover {
+        background-color: #4b0082;
+        transform: scale(1.05);
+    }
+
+    /* Password toggle */
+    .password-container {
+        position: relative;
+    }
+
+    .password-container input {
+        padding-right: 45px;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        cursor: pointer;
+        color: #800080;
+        font-size: 18px;
+    }
+
+    .password-toggle:hover {
+        color: #4b0082;
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #800080;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        position: absolute;
+        right: 12px;
+        top: 14px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Message container */
+    .message-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .message {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transform: translateX(120%);
+        transition: transform 0.5s ease, opacity 0.5s ease;
+        opacity: 1;
+    }
+    
+    .message.error {
+        background-color: #f44336;
+    }
+    
+    .message.success {
+        background-color: #4caf50;
+    }
+    
+    .message.slide-in {
+        transform: translateX(0);
+    }
+    
+    .message.fade-out {
+        opacity: 0;
+        transform: translateX(120%);
+    }
 </style>
 
+<!-- Bootstrap Icons CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-        <section class="user-form-part">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-12 col-sm-10 col-md-12 col-lg-12 col-xl-6">
-                        <div class="user-form-logo">
-                            <a href="/"><img src="{% static 'en/images/yuva_logo.png'%}" alt="logo"></a>
-                        </div>
-                        <div class="user-form-card">
-                            <div class="user-form-title">
-                                <h2>welcome!</h2>
-                                <p>Use your credentials to access</p>
-                            </div>
-                            <div class="user-form-group">
-                               
-                                <form class="user-form" method="post">
-                                    {% csrf_token %}
-                                    <div class="form-group">
-                                        <label for="{{ form.username.id_for_label }}">Username</label>
-                                        {{ form.username }}
-                                        {% if form.username.errors %}
-                                            <small class="error">{{ form.username.errors.0 }}</small>
-                                        {% endif %}
-                                    </div>
+{% if messages %}
+<div class="message-container">
+    {% for message in messages %}
+    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
-                                    <div class="form-group">
-                                        <label for="{{ form.email.id_for_label }}">Email</label>
-                                        {{ form.email }}
-                                        {% if form.email.errors %}
-                                            <small class="error">{{ form.email.errors.0 }}</small>
-                                        {% endif %}
-                                    </div>
+<section class="user-form-part">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-12 col-lg-12 col-xl-6">
+                <div class="user-form-logo">
+                    <a href="/"><img src="{% static 'en/images/yuva_logo.png'%}" alt="logo"></a>
+                </div>
+                <div class="user-form-card">
+                    <div class="user-form-title">
+                        <h2>welcome!</h2>
+                        <p>Create your account to get started</p>
+                    </div>
+                    <div class="user-form-group">
+                        <form class="user-form" method="post" id="signupForm">
+                            {% csrf_token %}
                             
-                                    <div class="form-group">
-                                        <label for="{{ form.password1.id_for_label }}">Password</label>
-                                        {{ form.password1 }}
-                                        {% if form.password1.errors %}
-                                            <small class="error">{{ form.password1.errors.0 }}</small>
-                                        {% endif %}
-                                    </div>
-                            
-                                    <div class="form-group">
-                                        <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
-                                        {{ form.password2 }}
-                                        {% if form.password2.errors %}
-                                            <small class="error">{{ form.password2.errors.0 }}</small>
-                                        {% endif %}
-                                    </div>
-                            
-                                 
-                                    <br>
-                                    <div class="form-button">
-                                        <button type="submit">Signup</button>
-                                        <p>Forgot your password?<a href="#">reset here</a></p>
-                                    </div>
-                                </form>
+                            <!-- Username Field -->
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <div style="position: relative;">
+                                    {{ form.username }}
+                                    <div class="loading-spinner" id="usernameSpinner"></div>
+                                </div>
+                                <div class="validation-message" id="usernameMessage"></div>
+                                <div class="username-suggestions" id="usernameSuggestions">
+                                    <p>Try these available usernames:</p>
+                                    <div class="suggestion-chips" id="suggestionChips"></div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="user-form-remind">
-                            <p>Don't have any account?<a href="{% url 'accounts:login' %}">Login</a></p>
-                        </div>
-                        <div class="user-form-footer">
-                            <p>Yuvaa | &COPY; Copyright by <a href="#">InnovatioHub Softwares</a></p>
-                        </div>
+
+                            <!-- Email Field -->
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                {{ form.email }}
+                                <div class="validation-message" id="emailMessage"></div>
+                            </div>
+                    
+                            <!-- Password Field -->
+                            <div class="form-group">
+                                <label for="password1">Password</label>
+                                <div class="password-container">
+                                    {{ form.password1 }}
+                                    <i class="bi bi-eye-slash password-toggle" id="togglePassword1"></i>
+                                </div>
+                                <div class="validation-message" id="password1Message"></div>
+                            </div>
+                    
+                            <!-- Confirm Password Field -->
+                            <div class="form-group">
+                                <label for="password2">Confirm Password</label>
+                                <div class="password-container">
+                                    {{ form.password2 }}
+                                    <i class="bi bi-eye-slash password-toggle" id="togglePassword2"></i>
+                                </div>
+                                <div class="validation-message" id="password2Message"></div>
+                            </div>
+                    
+                            <div class="form-button">
+                                <button type="submit">Sign up</button>
+                                <p>Already have an account? <a href="{% url 'accounts:login' %}">Login here</a></p>
+                            </div>
+                        </form>
                     </div>
                 </div>
+                <div class="user-form-footer">
+                    <p>Yuvaa | &COPY; Copyright by <a href="#">kencom softwares</a></p>
+                </div>
             </div>
-        </section>
-        {% endblock body %}
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Handle existing messages animation
+        const messages = document.querySelectorAll('.message');
+        messages.forEach((msg, index) => {
+            setTimeout(() => msg.classList.add('slide-in'), index * 200);
+            setTimeout(() => {
+                msg.classList.add('fade-out');
+                msg.addEventListener('transitionend', () => msg.remove());
+            }, 5000);
+        });
+
+        // Username availability check
+        const usernameInput = document.getElementById('username');
+        const usernameMessage = document.getElementById('usernameMessage');
+        const usernameSpinner = document.getElementById('usernameSpinner');
+        const usernameSuggestions = document.getElementById('usernameSuggestions');
+        const suggestionChips = document.getElementById('suggestionChips');
+        let usernameTimeout;
+
+        usernameInput.addEventListener('input', function() {
+            const username = this.value.trim();
+            
+            clearTimeout(usernameTimeout);
+            usernameMessage.style.display = 'none';
+            usernameSuggestions.classList.remove('show');
+            usernameInput.classList.remove('error-input', 'success-input');
+
+            if (username.length < 3) {
+                return;
+            }
+
+            usernameSpinner.style.display = 'block';
+
+            usernameTimeout = setTimeout(() => {
+                fetch(`{% url 'accounts:check_username' %}?username=${encodeURIComponent(username)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        usernameSpinner.style.display = 'none';
+                        
+                        if (data.available) {
+                            usernameInput.classList.add('success-input');
+                            usernameMessage.textContent = data.message;
+                            usernameMessage.className = 'validation-message success';
+                        } else {
+                            usernameInput.classList.add('error-input');
+                            usernameMessage.textContent = data.message;
+                            usernameMessage.className = 'validation-message error';
+                            
+                            // Show suggestions
+                            if (data.suggestions && data.suggestions.length > 0) {
+                                suggestionChips.innerHTML = '';
+                                data.suggestions.forEach(suggestion => {
+                                    const chip = document.createElement('span');
+                                    chip.className = 'suggestion-chip';
+                                    chip.textContent = suggestion;
+                                    chip.addEventListener('click', function() {
+                                        usernameInput.value = suggestion;
+                                        usernameInput.dispatchEvent(new Event('input'));
+                                    });
+                                    suggestionChips.appendChild(chip);
+                                });
+                                usernameSuggestions.classList.add('show');
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        usernameSpinner.style.display = 'none';
+                        console.error('Error checking username:', error);
+                    });
+            }, 500);
+        });
+
+        // Email validation
+        const emailInput = document.getElementById('email');
+        const emailMessage = document.getElementById('emailMessage');
+
+        emailInput.addEventListener('blur', function() {
+            const email = this.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (email && !emailRegex.test(email)) {
+                emailInput.classList.add('error-input');
+                emailMessage.textContent = 'Please enter a valid email address.';
+                emailMessage.className = 'validation-message error';
+            } else {
+                emailInput.classList.remove('error-input');
+                emailMessage.style.display = 'none';
+            }
+        });
+
+        // Password matching validation
+        const password1Input = document.getElementById('password1');
+        const password2Input = document.getElementById('password2');
+        const password2Message = document.getElementById('password2Message');
+
+        password2Input.addEventListener('input', function() {
+            if (password1Input.value && password2Input.value) {
+                if (password1Input.value !== password2Input.value) {
+                    password2Input.classList.add('error-input');
+                    password2Message.textContent = 'Passwords do not match.';
+                    password2Message.className = 'validation-message error';
+                } else {
+                    password2Input.classList.add('success-input');
+                    password2Input.classList.remove('error-input');
+                    password2Message.textContent = 'Passwords match!';
+                    password2Message.className = 'validation-message success';
+                }
+            }
+        });
+
+        // Password toggle functionality
+        const togglePassword1 = document.getElementById('togglePassword1');
+        const togglePassword2 = document.getElementById('togglePassword2');
+
+        togglePassword1.addEventListener('click', function() {
+            const type = password1Input.getAttribute('type') === 'password' ? 'text' : 'password';
+            password1Input.setAttribute('type', type);
+            this.classList.toggle('bi-eye');
+            this.classList.toggle('bi-eye-slash');
+        });
+
+        togglePassword2.addEventListener('click', function() {
+            const type = password2Input.getAttribute('type') === 'password' ? 'text' : 'password';
+            password2Input.setAttribute('type', type);
+            this.classList.toggle('bi-eye');
+            this.classList.toggle('bi-eye-slash');
+        });
+    });
+</script>
+
+{% endblock body %}

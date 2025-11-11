@@ -11,6 +11,7 @@ urlpatterns = [
     path('signup',signup , name='signup'),
     path('<str:username>/activate',activate),
     path('accounts/logout/', logout_view, name='logout'),
+    path('check-username/', views.check_username, name='check_username'),
 
     path('profile/', view_profile, name='view_profile'),
     path('profile/update/', update_profile, name='update_profile'),

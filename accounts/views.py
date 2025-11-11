@@ -36,8 +36,16 @@ def login_view(request):
 
 
 
-
-
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from .forms import SignupForm
+from .models import Profile
+import re
 
 def signup(request):
     if request.method == 'POST':
@@ -46,31 +54,88 @@ def signup(request):
             username = form.cleaned_data['username']
             email = form.cleaned_data['email']
             
-            # Create user object but don't save it yet
-            user = form.save(commit=False)
-            user.is_active = True  # Changed to True - user is active immediately
+            # Create user with the password (no validators)
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=form.cleaned_data['password1']
+            )
+            user.is_active = True
             user.save()
             
-            # Create or update the profile associated with this user
-            profile = Profile.objects.get(user__username=username)
+            # Profile is created automatically via signal
             
-            # Send welcome email (optional - you can keep or remove this)
-            send_mail(
-                "Welcome to Your Account",
-                f"Welcome {username}! Your account has been activated. You can now login.",
-                settings.EMAIL_HOST_USER,
-                [email],
-                fail_silently=False,
-            )
+            # Send welcome email (optional)
+            try:
+                send_mail(
+                    "Welcome to Yuvaa",
+                    f"Welcome {username}! Your account has been created successfully. You can now login.",
+                    settings.EMAIL_HOST_USER,
+                    [email],
+                    fail_silently=True,
+                )
+            except:
+                pass
                 
-            # Redirect directly to login instead of activation page
             messages.success(request, "Registration successful! Welcome aboard.")
-            return redirect('/accounts/login')
-            
+            return redirect('accounts:login')
     else:
         form = SignupForm()
     
     return render(request, 'registration/register.html', {'form': form})
+
+
+@require_http_methods(["GET"])
+def check_username(request):
+    """API endpoint to check username availability and suggest alternatives"""
+    username = request.GET.get('username', '').strip()
+    
+    if not username:
+        return JsonResponse({'available': False, 'message': ''})
+    
+    # Check if username exists
+    if User.objects.filter(username=username).exists():
+        # Generate suggestions
+        suggestions = generate_username_suggestions(username)
+        return JsonResponse({
+            'available': False,
+            'message': f'Username "{username}" is already taken.',
+            'suggestions': suggestions
+        })
+    
+    return JsonResponse({
+        'available': True,
+        'message': f'Username "{username}" is available!'
+    })
+
+
+def generate_username_suggestions(base_username):
+    """Generate alternative username suggestions"""
+    suggestions = []
+    
+    # Remove numbers from the end if present
+    base = re.sub(r'\d+$', '', base_username)
+    
+    # Try adding numbers
+    for i in range(1, 100):
+        suggestion = f"{base}{i}"
+        if not User.objects.filter(username=suggestion).exists():
+            suggestions.append(suggestion)
+            if len(suggestions) >= 3:
+                break
+    
+    # If we still need more suggestions, try random numbers
+    if len(suggestions) < 3:
+        import random
+        for _ in range(10):
+            num = random.randint(10, 99)
+            suggestion = f"{base}{num}"
+            if not User.objects.filter(username=suggestion).exists() and suggestion not in suggestions:
+                suggestions.append(suggestion)
+                if len(suggestions) >= 3:
+                    break
+    
+    return suggestions[:3]
 
 
 def logout_view(request):

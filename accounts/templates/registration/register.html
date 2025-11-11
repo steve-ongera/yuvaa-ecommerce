@@ -66,13 +66,6 @@
         display: block;
     }
 
-    .validation-message.info {
-        background-color: #e3f2fd;
-        color: #1565c0;
-        border-left: 3px solid #2196f3;
-        display: block;
-    }
-
     /* Username suggestions */
     .username-suggestions {
         display: none;
@@ -229,7 +222,13 @@
                             <div class="form-group">
                                 <label for="username">Username</label>
                                 <div style="position: relative;">
-                                    {{ form.username }}
+                                    <input type="text" 
+                                           name="username" 
+                                           id="username" 
+                                           class="form-control" 
+                                           placeholder="Enter Username"
+                                           value="{{ username|default:'' }}"
+                                           required>
                                     <div class="loading-spinner" id="usernameSpinner"></div>
                                 </div>
                                 <div class="validation-message" id="usernameMessage"></div>
@@ -242,7 +241,13 @@
                             <!-- Email Field -->
                             <div class="form-group">
                                 <label for="email">Email</label>
-                                {{ form.email }}
+                                <input type="email" 
+                                       name="email" 
+                                       id="email" 
+                                       class="form-control" 
+                                       placeholder="Enter Email"
+                                       value="{{ email|default:'' }}"
+                                       required>
                                 <div class="validation-message" id="emailMessage"></div>
                             </div>
                     
@@ -250,7 +255,12 @@
                             <div class="form-group">
                                 <label for="password1">Password</label>
                                 <div class="password-container">
-                                    {{ form.password1 }}
+                                    <input type="password" 
+                                           name="password1" 
+                                           id="password1" 
+                                           class="form-control" 
+                                           placeholder="Enter Password"
+                                           required>
                                     <i class="bi bi-eye-slash password-toggle" id="togglePassword1"></i>
                                 </div>
                                 <div class="validation-message" id="password1Message"></div>
@@ -260,7 +270,12 @@
                             <div class="form-group">
                                 <label for="password2">Confirm Password</label>
                                 <div class="password-container">
-                                    {{ form.password2 }}
+                                    <input type="password" 
+                                           name="password2" 
+                                           id="password2" 
+                                           class="form-control" 
+                                           placeholder="Confirm Password"
+                                           required>
                                     <i class="bi bi-eye-slash password-toggle" id="togglePassword2"></i>
                                 </div>
                                 <div class="validation-message" id="password2Message"></div>

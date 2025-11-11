@@ -65,7 +65,7 @@ REST_FRAMEWORK = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://191ca1cf5751.ngrok-free.app',
+    'https://c9231dd43e07.ngrok-free.app',
 ]
 
 

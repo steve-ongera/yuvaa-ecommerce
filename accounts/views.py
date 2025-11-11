@@ -47,18 +47,56 @@ from .forms import SignupForm
 from .models import Profile
 import re
 
+
 def signup(request):
     if request.method == 'POST':
-        form = SignupForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+        
+        # Basic validation
+        errors = {}
+        
+        if not username:
+            errors['username'] = "Username is required."
+        elif len(username) < 3:
+            errors['username'] = "Username must be at least 3 characters."
+        elif User.objects.filter(username=username).exists():
+            errors['username'] = "This username is already taken."
             
-            # Create user with the password (no validators)
+        if not email:
+            errors['email'] = "Email is required."
+        elif not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+            errors['email'] = "Please enter a valid email address."
+        elif User.objects.filter(email=email).exists():
+            errors['email'] = "This email is already registered."
+            
+        if not password1:
+            errors['password1'] = "Password is required."
+        elif len(password1) < 6:
+            errors['password1'] = "Password must be at least 6 characters."
+            
+        if not password2:
+            errors['password2'] = "Please confirm your password."
+        elif password1 != password2:
+            errors['password2'] = "Passwords do not match."
+        
+        # If there are errors, return to form with errors
+        if errors:
+            for field, error in errors.items():
+                messages.error(request, error)
+            return render(request, 'registration/register.html', {
+                'username': username,
+                'email': email
+            })
+        
+        # Create user
+        try:
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password=form.cleaned_data['password1']
+                password=password1
             )
             user.is_active = True
             user.save()
@@ -74,16 +112,20 @@ def signup(request):
                     [email],
                     fail_silently=True,
                 )
-            except:
-                pass
+            except Exception as e:
+                print(f"Email error: {e}")
                 
             messages.success(request, "Registration successful! Welcome aboard.")
             return redirect('accounts:login')
-    else:
-        form = SignupForm()
+            
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+            return render(request, 'registration/register.html', {
+                'username': username,
+                'email': email
+            })
     
-    return render(request, 'registration/register.html', {'form': form})
-
+    return render(request, 'registration/register.html')
 
 @require_http_methods(["GET"])
 def check_username(request):

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rosetta',
     'drf_yasg',
     'django_bootstrap5',
+    'debug_toolbar',
 
 
 ]

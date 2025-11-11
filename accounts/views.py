@@ -28,7 +28,7 @@ def login_view(request):
             next_url = request.POST.get("next", "/")  # Get the 'next' parameter from the form submission
             return redirect(next_url)
         else:
-            messages.error(request, "Invalid username or password")
+            messages.error(request, "Invalid email or password")
     
     # Pass the next_url to the template context
     return render(request, "registration/login.html", {"next": next_url})

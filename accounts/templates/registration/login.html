@@ -5,8 +5,6 @@
 {% block body %}
 
 <style>
-   
-
     /* Input fields */
     .user-form input {
         width: 100%;
@@ -27,17 +25,58 @@
 
     .user-form label {
         font-weight: bold;
-        
         display: block;
         margin-bottom: 5px;
     }
-    
 
-    
+    /* Password input container */
+    .password-container {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .password-container input {
+        padding-right: 45px; /* Space for the eye icon */
+        margin-bottom: 0;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #800080;
+        font-size: 18px;
+        z-index: 10;
+    }
+
+    .password-toggle:hover {
+        color: #4b0082;
+    }
+
+    /* Reset link styling */
+    .reset-link {
+        text-align: right;
+        margin-top: -10px;
+        margin-bottom: 15px;
+    }
+
+    .reset-link a {
+        color: #800080;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .reset-link a:hover {
+        text-decoration: underline;
+        color: #4b0082;
+    }
+
     .message-container {
         position: fixed;
         top: 20px;
-        right: 20px;  /* Changed to right side */
+        right: 20px;
         z-index: 1000;
         display: flex;
         flex-direction: column;
@@ -50,7 +89,7 @@
         padding: 10px 20px;
         border-radius: 4px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transform: translateX(120%);  /* Start from the right */
+        transform: translateX(120%);
         transition: transform 0.5s ease, opacity 0.5s ease;
         opacity: 1;
     }
@@ -64,94 +103,109 @@
     }
     
     .message.slide-in {
-        transform: translateX(0);  /* Slide in to normal position */
+        transform: translateX(0);
     }
     
     .message.fade-out {
         opacity: 0;
-        transform: translateX(120%);  /* Slide out to the right */
+        transform: translateX(120%);
     }
-    
-    
-
-    
-    
-    
 </style>
 
-    {% if messages %}
-    <div class="message-container">
-        {% for message in messages %}
-        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
+<!-- Bootstrap Icons CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+{% if messages %}
+<div class="message-container">
+    {% for message in messages %}
+    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+        {{ message }}
     </div>
-    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
 
-    <!-- Include this at the bottom of your home.html -->
-    <script>
-        // Wait for the page to load
-        document.addEventListener("DOMContentLoaded", function() {
-            // Select all message divs
-            const messages = document.querySelectorAll('.message');
-            
-            messages.forEach((msg, index) => {
-                // Slide in animation from right
-                setTimeout(() => {
-                    msg.classList.add('slide-in');
-                }, index * 200); // Delay each message slightly
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const messages = document.querySelectorAll('.message');
+        
+        messages.forEach((msg, index) => {
+            setTimeout(() => {
+                msg.classList.add('slide-in');
+            }, index * 200);
 
-                // Auto remove after 5 seconds
-                setTimeout(() => {
-                    msg.classList.add('fade-out');
-                    msg.addEventListener('transitionend', () => {
-                        msg.remove();
-                    });
-                }, 5000);
-            });
+            setTimeout(() => {
+                msg.classList.add('fade-out');
+                msg.addEventListener('transitionend', () => {
+                    msg.remove();
+                });
+            }, 5000);
         });
-    </script>
-    
+    });
+</script>
 
-        <section class="user-form-part">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-12 col-sm-10 col-md-12 col-lg-12 col-xl-6">
-                        <div class="user-form-logo">
-                            <a href="/"><img src="{% static 'en/images/yuva_logo.png'%}" alt="logo"></a>
-                        </div>
-                        <div class="user-form-card">
-                            <div class="user-form-title">
-                                <h2>welcome!</h2>
-                                <p>Use your credentials to access</p>
-                            </div>
-                            <div class="user-form-group">
-                                
-                                <form class="user-form" method="post" action="{% url 'accounts:login' %}">
-                                    {% csrf_token %}
-                                    <label for="username">Username</label>
-                                    <input type="text" name="username" placeholder="Username">
+<section class="user-form-part">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-12 col-lg-12 col-xl-6">
+                <div class="user-form-logo">
+                    <a href="/"><img src="{% static 'en/images/yuva_logo.png'%}" alt="logo"></a>
+                </div>
+                <div class="user-form-card">
+                    <div class="user-form-title">
+                        <h2>welcome!</h2>
+                        <p>Use your credentials to access</p>
+                    </div>
+                    <div class="user-form-group">
+                        <form class="user-form" method="post" action="{% url 'accounts:login' %}">
+                            {% csrf_token %}
+                            
+                            <label for="email">Email</label>
+                            <input type="text" name="email" id="email" placeholder="Email" required>
 
-                                    <label for="password">Password</label>
-                                    <input  type="password" name="password" placeholder="Password">
-                                   
-                                    <input type="hidden" name="next" value="{{ next }}">
-                                    <div class="form-button">
-                                        <button type="submit">login</button>
-                                        <p>Forgot your password?<a href="{% url 'accounts:password_reset'%}">reset here</a></p>
-                                    </div>
-                                </form>
+                            <label for="password">Password</label>
+                            <div class="password-container">
+                                <input type="password" name="password" id="password" placeholder="Password" required>
+                                <i class="bi bi-eye-slash password-toggle" id="togglePassword"></i>
                             </div>
-                        </div>
-                        <div class="user-form-remind">
-                            <p>Don't have any account?<a href="{% url 'accounts:signup'%}">register here</a></p>
-                        </div>
-                        <div class="user-form-footer">
-                            <p>Yuvaa | &COPY; Copyright by <a href="#">InnovationHub Softwares</a></p>
-                        </div>
+
+                            <!-- Reset Password Link (moved above login button) -->
+                            <div class="reset-link">
+                                <a href="{% url 'accounts:password_reset' %}">Forgot your password?</a>
+                            </div>
+                           
+                            <input type="hidden" name="next" value="{{ next }}">
+                            
+                            <div class="form-button">
+                                <button type="submit">login</button>
+                                <!-- Don't have account moved below login button -->
+                                <p>Don't have an account? <a href="{% url 'accounts:signup' %}">Create here</a></p>
+                            </div>
+                        </form>
                     </div>
                 </div>
+                <div class="user-form-footer">
+                    <p>Yuvaa | &COPY; Copyright by <a href="#">kencom softwares</a></p>
+                </div>
             </div>
-        </section>
-        {% endblock body %}
+        </div>
+    </div>
+</section>
+
+<script>
+    // Password toggle functionality
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    togglePassword.addEventListener('click', function() {
+        // Toggle the type attribute
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle the eye icon
+        this.classList.toggle('bi-eye');
+        this.classList.toggle('bi-eye-slash');
+    });
+</script>
+
+{% endblock body %}
